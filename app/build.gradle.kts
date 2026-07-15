@@ -41,6 +41,12 @@ android {
 }
 
 dependencies {
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.lifecycle.livedata)
+    implementation(libs.recyclerview)
+    implementation(libs.swiperefreshlayout)
+    implementation(libs.work.runtime)
+    implementation(libs.glide)
     implementation(libs.activity.ktx)
     implementation(libs.appcompat)
     implementation(libs.constraintlayout)
