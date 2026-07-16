@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.widget.Toast;
 
@@ -31,8 +30,6 @@ import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.data.ArticleDao;
 import com.mowtiie.feedit.databinding.ActivityMainBinding;
 import com.mowtiie.feedit.model.Feed;
-import com.mowtiie.feedit.model.FeedTags;
-import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.sync.SyncLog;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
@@ -52,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
     private MainViewModel viewModel;
     private ArticleAdapter adapter;
     private ActionBarDrawerToggle drawerToggle;
-
-    private MenuItem currentlyCheckedItem;
 
     private final Set<Long> selectedArticleIds = new HashSet<>();
     private ActionMode actionMode;
@@ -143,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         drawerToggle.syncState();
 
         binding.navView.setNavigationItemSelectedListener(this::onDrawerItemSelected);
-        currentlyCheckedItem = binding.navView.getMenu().findItem(R.id.nav_all);
     }
 
     private void setupBackNavigation() {
@@ -185,18 +179,7 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
             viewModel.selectUnread();
         } else if (id == R.id.nav_starred) {
             viewModel.selectStarred();
-        } else if (item.getGroupId() == R.id.group_tags) {
-            viewModel.selectTag(id);
-        } else if (item.getGroupId() == R.id.group_feeds) {
-            viewModel.selectFeed(id);
         }
-
-        if (currentlyCheckedItem != null) {
-            currentlyCheckedItem.setChecked(false);
-        }
-        item.setCheckable(true);
-        item.setChecked(true);
-        currentlyCheckedItem = item;
 
         binding.drawerLayout.closeDrawer(GravityCompat.START);
         return true;
@@ -245,8 +228,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
             adapter.submitList(items);
             updateEmptyState(items);
         });
-        viewModel.getTags().observe(this, this::populateTagGroup);
-        viewModel.getFeedsWithTags().observe(this, this::populateFeedGroup);
     }
 
     private void updateEmptyState(List<ArticleUiState> items) {
@@ -263,26 +244,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
             binding.textEmptyState.setText(R.string.empty_state_all_caught_up);
         } else {
             binding.textEmptyState.setText(R.string.empty_state_no_articles);
-        }
-    }
-
-    private void populateTagGroup(List<Tag> tags) {
-        SubMenu subMenu = binding.navView.getMenu().findItem(R.id.header_tags).getSubMenu();
-        subMenu.removeGroup(R.id.group_tags);
-        for (Tag tag : tags) {
-            subMenu.add(R.id.group_tags, (int) tag.getId(), Menu.NONE, tag.getName())
-                    .setCheckable(true);
-        }
-    }
-
-    private void populateFeedGroup(List<FeedTags> feeds) {
-        SubMenu subMenu = binding.navView.getMenu().findItem(R.id.header_feeds).getSubMenu();
-        subMenu.removeGroup(R.id.group_feeds);
-        for (FeedTags feedTags : feeds) {
-            String title = feedTags.getFeed().getTitle() != null
-                    ? feedTags.getFeed().getTitle() : feedTags.getFeed().getUrl();
-            subMenu.add(R.id.group_feeds, (int) feedTags.getFeed().getId(), Menu.NONE, title)
-                    .setCheckable(true);
         }
     }
 

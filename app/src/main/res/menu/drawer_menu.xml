@@ -16,22 +16,6 @@
             android:title="@string/nav_starred" />
     </group>
 
-    <item
-        android:id="@+id/header_tags"
-        android:title="@string/nav_section_tags">
-        <menu>
-            <group android:id="@+id/group_tags" />
-        </menu>
-    </item>
-
-    <item
-        android:id="@+id/header_feeds"
-        android:title="@string/nav_section_feeds">
-        <menu>
-            <group android:id="@+id/group_feeds" />
-        </menu>
-    </item>
-
     <group android:id="@+id/group_footer">
         <item
             android:id="@+id/nav_manage_feeds"
