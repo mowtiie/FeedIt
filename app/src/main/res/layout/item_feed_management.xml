@@ -50,28 +50,23 @@
 
         </LinearLayout>
 
-        <com.google.android.material.divider.MaterialDivider
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
+            android:gravity="start"
             android:orientation="horizontal"
-            android:paddingHorizontal="6dp"
-            android:paddingVertical="4dp">
+            android:paddingBottom="16dp"
+            android:paddingHorizontal="16dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_edit_feed"
-                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="9dp"
                 android:text="@string/action_edit" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_delete_feed"
-                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
