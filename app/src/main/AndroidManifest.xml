@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FeedIt">
         <activity
+            android:name=".ui.activities.FeedManagementActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.ArticleDetailActivity"
             android:exported="false" />
         <activity
