@@ -64,6 +64,15 @@
             android:contentDescription="@string/content_desc_star_toggle"
             android:src="@android:drawable/btn_star_big_off" />
 
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkbox_select"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="gone" />
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
