@@ -54,7 +54,7 @@ public class FeedManagementActivity extends AppCompatActivity implements FeedAda
     @Override
     protected void onResume() {
         super.onResume();
-        viewModel.refresh(); // pick up anything changed in AddEditFeedActivity since we last showed
+        viewModel.refresh();
     }
 
     @Override
