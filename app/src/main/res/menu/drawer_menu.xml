@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/group_quick"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_all"
+            android:checked="true"
+            android:title="@string/nav_all" />
+        <item
+            android:id="@+id/nav_unread"
+            android:title="@string/nav_unread" />
+        <item
+            android:id="@+id/nav_starred"
+            android:title="@string/nav_starred" />
+    </group>
+
+    <item
+        android:id="@+id/header_tags"
+        android:title="@string/nav_section_tags">
+        <menu>
+            <group android:id="@+id/group_tags" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/header_feeds"
+        android:title="@string/nav_section_feeds">
+        <menu>
+            <group android:id="@+id/group_feeds" />
+        </menu>
+    </item>
+
+    <group android:id="@+id/group_footer">
+        <item
+            android:id="@+id/nav_manage_feeds"
+            android:title="@string/nav_manage_feeds" />
+        <item
+            android:id="@+id/nav_manage_tags"
+            android:title="@string/nav_manage_tags" />
+        <item
+            android:id="@+id/nav_settings"
+            android:title="@string/nav_settings" />
+    </group>
+
+</menu>
