@@ -1,4 +1,4 @@
-package com.mowtiie.feedit.ui.adapter;
+package com.mowtiie.feedit.ui.adapters;
 
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
