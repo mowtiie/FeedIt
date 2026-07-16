@@ -3,7 +3,6 @@ package com.mowtiie.feedit.ui.activities;
 import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,9 +34,9 @@ import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
+import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
-import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 
 import java.util.List;
 
@@ -54,10 +53,8 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
 
     private final ActivityResultLauncher<String> requestNotificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                // no-op either way — denied just means sync runs without notifications
+                // No-op either way — if denied, sync still runs, notifications just won't show.
             });
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         observeViewModel();
 
         maybeRequestNotificationPermission();
+
         long openFeedId = getIntent().getLongExtra(EXTRA_OPEN_FEED_ID, -1L);
         if (openFeedId != -1L) {
             viewModel.selectFeed(openFeedId);
@@ -87,27 +85,15 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
     private void maybeRequestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
     }
 
-    private void setupSwipeRefresh() {
-        binding.swipeRefresh.setOnRefreshListener(() -> SyncScheduler.triggerManualSync(this));
-
-        WorkManager.getInstance(this)
-                .getWorkInfosForUniqueWorkLiveData(SyncScheduler.MANUAL_SYNC_WORK_NAME)
-                .observe(this, workInfos -> {
-                    if (workInfos == null || workInfos.isEmpty()) return;
-                    if (workInfos.get(0).getState().isFinished()) {
-                        binding.swipeRefresh.setRefreshing(false);
-                        viewModel.refresh();
-                    }
-                });
-    }
-
     private void setupDrawer() {
-        drawerToggle = new ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar, R.string.content_desc_open_drawer, R.string.content_desc_open_drawer);
+        drawerToggle = new ActionBarDrawerToggle(
+                this, binding.drawerLayout, binding.toolbar,
+                R.string.content_desc_open_drawer, R.string.content_desc_open_drawer);
         binding.drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
 
@@ -133,15 +119,15 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         int id = item.getItemId();
 
         if (id == R.id.nav_manage_feeds) {
-            // TODO: launch FeedManagementActivity once it exists (Phase 4)
+            startActivity(new Intent(this, FeedManagementActivity.class));
             binding.drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         } else if (id == R.id.nav_manage_tags) {
-            // TODO: launch TagManagementActivity once it exists (Phase 4)
+            startActivity(new Intent(this, TagManagementActivity.class));
             binding.drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         } else if (id == R.id.nav_settings) {
-            // TODO: launch SettingsActivity once it exists (Phase 6)
+            startActivity(new Intent(this, SettingsActivity.class));
             binding.drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         }
@@ -161,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         if (currentlyCheckedItem != null) {
             currentlyCheckedItem.setChecked(false);
         }
-
         item.setCheckable(true);
         item.setChecked(true);
         currentlyCheckedItem = item;
@@ -174,6 +159,22 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         adapter = new ArticleAdapter(this);
         binding.recyclerArticles.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerArticles.setAdapter(adapter);
+    }
+
+    private void setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener(() -> SyncScheduler.triggerManualSync(this));
+
+        WorkManager.getInstance(this)
+                .getWorkInfosForUniqueWorkLiveData(SyncScheduler.MANUAL_SYNC_WORK_NAME)
+                .observe(this, workInfos -> {
+                    if (workInfos == null || workInfos.isEmpty()) {
+                        return;
+                    }
+                    if (workInfos.get(0).getState().isFinished()) {
+                        binding.swipeRefresh.setRefreshing(false);
+                        viewModel.refresh();
+                    }
+                });
     }
 
     private void observeViewModel() {
@@ -189,7 +190,8 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         SubMenu subMenu = binding.navView.getMenu().findItem(R.id.header_tags).getSubMenu();
         subMenu.removeGroup(R.id.group_tags);
         for (Tag tag : tags) {
-            subMenu.add(R.id.group_tags, (int) tag.getId(), Menu.NONE, tag.getName()).setCheckable(true);
+            subMenu.add(R.id.group_tags, (int) tag.getId(), Menu.NONE, tag.getName())
+                    .setCheckable(true);
         }
     }
 
