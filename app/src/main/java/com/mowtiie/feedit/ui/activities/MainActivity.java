@@ -1,8 +1,11 @@
 package com.mowtiie.feedit.ui.activities;
 
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,12 +15,16 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.work.WorkManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowtiie.feedit.R;
@@ -26,6 +33,7 @@ import com.mowtiie.feedit.databinding.ActivityMainBinding;
 import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
+import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
@@ -35,12 +43,21 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ArticleAdapter.Listener {
 
+    public static final String EXTRA_OPEN_FEED_ID = "extra_open_feed_id";
+
     private ActivityMainBinding binding;
     private MainViewModel viewModel;
     private ArticleAdapter adapter;
     private ActionBarDrawerToggle drawerToggle;
 
     private MenuItem currentlyCheckedItem;
+
+    private final ActivityResultLauncher<String> requestNotificationPermission =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                // no-op either way — denied just means sync runs without notifications
+            });
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +76,34 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         setupRecyclerView();
         setupSwipeRefresh();
         observeViewModel();
+
+        maybeRequestNotificationPermission();
+        long openFeedId = getIntent().getLongExtra(EXTRA_OPEN_FEED_ID, -1L);
+        if (openFeedId != -1L) {
+            viewModel.selectFeed(openFeedId);
+        }
+    }
+
+    private void maybeRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+    }
+
+    private void setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener(() -> SyncScheduler.triggerManualSync(this));
+
+        WorkManager.getInstance(this)
+                .getWorkInfosForUniqueWorkLiveData(SyncScheduler.MANUAL_SYNC_WORK_NAME)
+                .observe(this, workInfos -> {
+                    if (workInfos == null || workInfos.isEmpty()) return;
+                    if (workInfos.get(0).getState().isFinished()) {
+                        binding.swipeRefresh.setRefreshing(false);
+                        viewModel.refresh();
+                    }
+                });
     }
 
     private void setupDrawer() {
@@ -129,15 +174,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         adapter = new ArticleAdapter(this);
         binding.recyclerArticles.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerArticles.setAdapter(adapter);
-    }
-
-    private void setupSwipeRefresh() {
-        binding.swipeRefresh.setOnRefreshListener(() -> {
-            // TODO: enqueue a one-time WorkManager sync request here (Phase 5).
-            // For now this just re-runs the current query against local data.
-            viewModel.refresh();
-            binding.swipeRefresh.setRefreshing(false);
-        });
     }
 
     private void observeViewModel() {
