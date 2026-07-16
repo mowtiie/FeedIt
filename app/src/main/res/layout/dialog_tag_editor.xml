@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_tag_name"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_tag_name">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_tag_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/label_color"
+        android:textAppearance="?attr/textAppearanceLabelLarge" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/swatch_container_0"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp">
+
+            <View
+                android:id="@+id/swatch_ring_0"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/swatch_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/swatch_fill_0"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:background="@drawable/swatch_circle" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/swatch_container_1"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp">
+
+            <View
+                android:id="@+id/swatch_ring_1"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/swatch_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/swatch_fill_1"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:background="@drawable/swatch_circle" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/swatch_container_2"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp">
+
+            <View
+                android:id="@+id/swatch_ring_2"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/swatch_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/swatch_fill_2"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:background="@drawable/swatch_circle" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/swatch_container_3"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp">
+
+            <View
+                android:id="@+id/swatch_ring_3"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/swatch_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/swatch_fill_3"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:background="@drawable/swatch_circle" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/swatch_container_4"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp">
+
+            <View
+                android:id="@+id/swatch_ring_4"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/swatch_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/swatch_fill_4"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:background="@drawable/swatch_circle" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/swatch_container_5"
+            android:layout_width="44dp"
+            android:layout_height="44dp">
+
+            <View
+                android:id="@+id/swatch_ring_5"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/swatch_ring"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/swatch_fill_5"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:background="@drawable/swatch_circle" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
