@@ -1,6 +1,8 @@
 package com.mowtiie.feedit.ui.adapters;
 
+import android.content.Context;
 import android.graphics.Typeface;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -10,19 +12,24 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.card.MaterialCardView;
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ItemArticleBinding;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.util.ArticleUiState;
 
 import java.text.DateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Set;
 
 public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.ViewHolder> {
 
     public interface Listener {
         void onArticleClicked(ArticleUiState item);
+
+        void onArticleLongClicked(ArticleUiState item);
 
         void onStarToggled(ArticleUiState item);
     }
@@ -47,10 +54,18 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
             };
 
     private final Listener listener;
+    private Set<Long> selectedIds = Collections.emptySet();
+    private boolean selectionMode = false;
 
     public ArticleAdapter(Listener listener) {
         super(DIFF_CALLBACK);
         this.listener = listener;
+    }
+
+    public void updateSelection(Set<Long> selectedIds, boolean selectionMode) {
+        this.selectedIds = selectedIds;
+        this.selectionMode = selectionMode;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -63,7 +78,9 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(getItem(position), listener);
+        ArticleUiState item = getItem(position);
+        boolean isSelected = selectedIds.contains(item.getArticle().getId());
+        holder.bind(item, listener, selectionMode, isSelected);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -75,7 +92,7 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
             this.binding = binding;
         }
 
-        void bind(ArticleUiState item, Listener listener) {
+        void bind(ArticleUiState item, Listener listener, boolean selectionMode, boolean isSelected) {
             Article article = item.getArticle();
 
             binding.textTitle.setText(article.getTitle());
@@ -90,10 +107,6 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
             }
             binding.textMeta.setText(meta);
 
-            binding.buttonStar.setImageResource(article.isStarred()
-                    ? android.R.drawable.btn_star_big_on
-                    : android.R.drawable.btn_star_big_off);
-
             if (article.getImageUrl() != null) {
                 Glide.with(binding.imageThumbnail.getContext())
                         .load(article.getImageUrl())
@@ -105,8 +118,36 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
                 binding.imageThumbnail.setBackgroundResource(R.drawable.placeholder_thumbnail);
             }
 
-            binding.getRoot().setOnClickListener(v -> listener.onArticleClicked(item));
+            MaterialCardView card = binding.getRoot();
+            if (selectionMode) {
+                binding.buttonStar.setVisibility(android.view.View.GONE);
+                binding.checkboxSelect.setVisibility(android.view.View.VISIBLE);
+                binding.checkboxSelect.setChecked(isSelected);
+                card.setCardBackgroundColor(resolveThemeColor(card.getContext(),
+                        isSelected ? com.google.android.material.R.attr.colorPrimaryContainer
+                                : com.google.android.material.R.attr.colorSurface));
+            } else {
+                binding.buttonStar.setVisibility(android.view.View.VISIBLE);
+                binding.checkboxSelect.setVisibility(android.view.View.GONE);
+                binding.buttonStar.setImageResource(article.isStarred()
+                        ? android.R.drawable.btn_star_big_on
+                        : android.R.drawable.btn_star_big_off);
+                card.setCardBackgroundColor(
+                        resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
+            }
+
+            card.setOnClickListener(v -> listener.onArticleClicked(item));
+            card.setOnLongClickListener(v -> {
+                listener.onArticleLongClicked(item);
+                return true;
+            });
             binding.buttonStar.setOnClickListener(v -> listener.onStarToggled(item));
+        }
+
+        private static int resolveThemeColor(Context context, int attrResId) {
+            TypedValue typedValue = new TypedValue();
+            context.getTheme().resolveAttribute(attrResId, typedValue, true);
+            return typedValue.data;
         }
     }
 }

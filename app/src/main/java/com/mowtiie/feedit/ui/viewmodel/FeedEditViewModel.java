@@ -147,6 +147,9 @@ public class FeedEditViewModel extends AndroidViewModel {
             return;
         }
         String trimmedUrl = urlInput.trim();
+        if (!trimmedUrl.matches("(?i)^https?://.*")) {
+            trimmedUrl = "https://" + trimmedUrl;
+        }
         String trimmedTitle = titleInput != null ? titleInput.trim() : "";
 
         if (isEditing()) {
@@ -159,9 +162,10 @@ public class FeedEditViewModel extends AndroidViewModel {
         }
 
         loading.setValue(true);
+        String finalTrimmedUrl = trimmedUrl;
         ioExecutor.execute(() -> {
             try {
-                String resolvedUrl = resolveFeedUrl(trimmedUrl);
+                String resolvedUrl = resolveFeedUrl(finalTrimmedUrl);
                 FetchResult fetchResult = fetcher.fetch(resolvedUrl, null, null);
                 if (!fetchResult.isSuccess()) {
                     postError("Couldn't reach that feed: " + fetchResult.getErrorMessage());
