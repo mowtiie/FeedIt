@@ -78,4 +78,13 @@
     <string name="confirm_delete_feed_message">This removes the feed and all its saved articles. This can\'t be undone.</string>
     <string name="confirm_delete_tag_title">Delete tag?</string>
     <string name="confirm_delete_tag_message">This removes the tag from every feed it\'s applied to. Feeds themselves aren\'t affected.</string>
+
+    <!-- Sync / notifications -->
+    <string name="notification_channel_name">New articles</string>
+    <string name="notification_channel_description">Notifies you when a followed feed has new articles</string>
+
+    <plurals name="new_articles_count">
+        <item quantity="one">%d new article</item>
+        <item quantity="other">%d new articles</item>
+    </plurals>
 </resources>
