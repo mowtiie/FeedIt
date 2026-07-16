@@ -101,4 +101,12 @@
     <string name="label_feeds_backup">Backup</string>
     <string name="action_import_opml">Import OPML</string>
     <string name="action_export_opml">Export OPML</string>
+
+    <!-- Multi-select (article list) -->
+    <string name="action_unstar">Unstar</string>
+    <string name="selection_count_format">%d selected</string>
+
+    <!-- Empty states -->
+    <string name="empty_state_no_results">No matching articles</string>
+    <string name="empty_state_all_caught_up">You\'re all caught up!</string>
 </resources>
