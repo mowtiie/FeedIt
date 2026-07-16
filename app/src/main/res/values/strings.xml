@@ -40,4 +40,42 @@
     <string name="action_mark_unread">Mark unread</string>
     <string name="action_share">Share</string>
     <string name="action_open_browser">Open in browser</string>
+
+    <!-- Add / Edit Feed -->
+    <string name="title_add_feed">Add Feed</string>
+    <string name="title_edit_feed">Edit Feed</string>
+    <string name="hint_feed_url">Feed URL or website</string>
+    <string name="hint_feed_title">Title (auto-filled)</string>
+    <string name="label_tags">Tags</string>
+    <string name="action_add_tag">+ Add tag</string>
+    <string name="label_notify_title">Notify me of new articles</string>
+    <string name="label_notify_subtitle">Push a notification on sync</string>
+    <string name="label_open_mode">Open articles in</string>
+    <string name="option_open_in_app">In-app reader</string>
+    <string name="option_open_browser">Browser</string>
+    <string name="action_save">Save</string>
+
+    <!-- Tag color dialog (shared by Add Feed\'s inline create + Tag Management\'s edit) -->
+    <string name="hint_tag_name">Tag name</string>
+    <string name="label_color">Color</string>
+    <string name="dialog_create_tag_title">New tag</string>
+    <string name="dialog_edit_tag_title">Edit tag</string>
+    <string name="action_create">Create</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Feed / Tag management -->
+    <string name="title_manage_feeds">Manage Feeds</string>
+    <string name="title_manage_tags">Manage Tags</string>
+    <string name="action_add">Add</string>
+    <string name="empty_state_no_feeds">No feeds yet.</string>
+    <string name="empty_state_no_tags">No tags yet.</string>
+    <string name="content_desc_delete_feed">Delete feed</string>
+    <string name="content_desc_edit_tag">Edit tag</string>
+    <string name="content_desc_delete_tag">Delete tag</string>
+    <string name="content_desc_tag_color">Tag color</string>
+    <string name="confirm_delete_feed_title">Delete feed?</string>
+    <string name="confirm_delete_feed_message">This removes the feed and all its saved articles. This can\'t be undone.</string>
+    <string name="confirm_delete_tag_title">Delete tag?</string>
+    <string name="confirm_delete_tag_message">This removes the tag from every feed it\'s applied to. Feeds themselves aren\'t affected.</string>
 </resources>
