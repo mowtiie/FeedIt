@@ -34,6 +34,7 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.sync.SyncScheduler;
+import com.mowtiie.feedit.sync.SyncLog;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleUiState;
@@ -208,7 +209,10 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
     }
 
     private void setupSwipeRefresh() {
-        binding.swipeRefresh.setOnRefreshListener(() -> SyncScheduler.triggerManualSync(this));
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            SyncLog.d("manual refresh triggered by pull-to-refresh");
+            SyncScheduler.triggerManualSync(this);
+        });
 
         WorkManager.getInstance(this)
                 .getWorkInfosForUniqueWorkLiveData(SyncScheduler.MANUAL_SYNC_WORK_NAME)
@@ -216,7 +220,20 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
                     if (workInfos == null || workInfos.isEmpty()) {
                         return;
                     }
-                    if (workInfos.get(0).getState().isFinished()) {
+
+                    boolean anyRunning = false;
+                    for (androidx.work.WorkInfo info : workInfos) {
+                        SyncLog.d("manual-sync WorkInfo state = " + info.getState());
+                        androidx.work.WorkInfo.State state = info.getState();
+                        if (state == androidx.work.WorkInfo.State.ENQUEUED
+                                || state == androidx.work.WorkInfo.State.RUNNING
+                                || state == androidx.work.WorkInfo.State.BLOCKED) {
+                            anyRunning = true;
+                        }
+                    }
+
+                    if (!anyRunning) {
+                        SyncLog.d("manual-sync: no runs in progress -> stopping spinner, refreshing list");
                         binding.swipeRefresh.setRefreshing(false);
                         viewModel.refresh();
                     }

@@ -23,6 +23,9 @@ import java.util.List;
 
 public class SyncWorker extends Worker {
 
+    private static final int OUTCOME_NOT_MODIFIED = -2;
+    private static final int OUTCOME_FETCH_FAILED = -1;
+
     public SyncWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
     }
@@ -30,18 +33,41 @@ public class SyncWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        long runStart = System.currentTimeMillis();
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(getApplicationContext());
         FeedDao feedDao = new FeedDao(dbHelper);
         ArticleDao articleDao = new ArticleDao(dbHelper);
         FeedFetcher fetcher = new FeedFetcher();
         FeedParser parser = new FeedParser();
 
-        List<FeedSyncResult> notifyResults = new ArrayList<>();
+        List<Feed> feeds = feedDao.getAllFeeds();
+        SyncLog.d("=== sync run START — " + feeds.size() + " feeds to process ===");
 
-        for (Feed feed : feedDao.getAllFeeds()) {
+        List<FeedSyncResult> notifyResults = new ArrayList<>();
+        int ok = 0, notModified = 0, failed = 0;
+
+        for (int i = 0; i < feeds.size(); i++) {
+            Feed feed = feeds.get(i);
+            long feedStart = System.currentTimeMillis();
+            String label = "[" + (i + 1) + "/" + feeds.size() + "] " + feed.getUrl();
+            SyncLog.d("--> " + label);
             try {
-                syncOneFeed(feed, feedDao, articleDao, fetcher, parser, notifyResults);
+                int outcome = syncOneFeed(feed, feedDao, articleDao, fetcher, parser, notifyResults);
+                long elapsed = System.currentTimeMillis() - feedStart;
+                if (outcome == OUTCOME_NOT_MODIFIED) {
+                    notModified++;
+                    SyncLog.d("<-- " + label + " : 304 not-modified (" + elapsed + "ms)");
+                } else if (outcome == OUTCOME_FETCH_FAILED) {
+                    failed++;
+                    SyncLog.w("<-- " + label + " : FETCH FAILED (" + elapsed + "ms)");
+                } else {
+                    ok++;
+                    SyncLog.d("<-- " + label + " : ok, " + outcome + " new (" + elapsed + "ms)");
+                }
             } catch (Exception e) {
+                failed++;
+                long elapsed = System.currentTimeMillis() - feedStart;
+                SyncLog.e("<-- " + label + " : EXCEPTION after " + elapsed + "ms", e);
             }
         }
 
@@ -49,24 +75,38 @@ public class SyncWorker extends Worker {
             NotificationHelper.notifyNewArticles(getApplicationContext(), notifyResults);
         }
 
+        long totalElapsed = System.currentTimeMillis() - runStart;
+        SyncLog.d("=== sync run END — ok=" + ok + " notModified=" + notModified
+                + " failed=" + failed + " totalTime=" + totalElapsed + "ms ===");
+        if (totalElapsed > 9 * 60 * 1000) {
+            SyncLog.w("Run took over 9 min — approaching WorkManager's 10-min limit; "
+                    + "the OS may kill long runs before they finish.");
+        }
         return Result.success();
     }
 
-    private void syncOneFeed(Feed feed, FeedDao feedDao, ArticleDao articleDao,
-                              FeedFetcher fetcher, FeedParser parser,
-                              List<FeedSyncResult> notifyResults) throws Exception {
+    private int syncOneFeed(Feed feed, FeedDao feedDao, ArticleDao articleDao,
+                            FeedFetcher fetcher, FeedParser parser,
+                            List<FeedSyncResult> notifyResults) throws Exception {
+        long t0 = System.currentTimeMillis();
         FetchResult fetchResult = fetcher.fetch(feed.getUrl(), feed.getEtag(), feed.getLastModified());
+        SyncLog.d("    fetch() returned in " + (System.currentTimeMillis() - t0) + "ms"
+                + " (hadEtag=" + (feed.getEtag() != null) + ")");
 
         if (fetchResult.isNotModified()) {
             feed.setLastFetched(System.currentTimeMillis());
             feedDao.updateFeed(feed);
-            return;
+            return OUTCOME_NOT_MODIFIED;
         }
         if (fetchResult.isError()) {
-            return;
+            SyncLog.w("    fetch error: " + fetchResult.getErrorMessage());
+            return OUTCOME_FETCH_FAILED;
         }
 
+        long parseStart = System.currentTimeMillis();
         ParsedFeedMeta meta = parser.parse(new ByteArrayInputStream(fetchResult.getBody()));
+        SyncLog.d("    parsed " + meta.getArticles().size() + " items in "
+                + (System.currentTimeMillis() - parseStart) + "ms");
 
         feed.setEtag(fetchResult.getNewEtag());
         feed.setLastModified(fetchResult.getNewLastModified());
@@ -99,5 +139,6 @@ public class SyncWorker extends Worker {
         if (newCount > 0 && feed.isNotifyNew()) {
             notifyResults.add(new FeedSyncResult(feed.getId(), feed.getTitle(), newCount));
         }
+        return newCount;
     }
 }

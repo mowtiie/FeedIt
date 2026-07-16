@@ -1,5 +1,7 @@
 package com.mowtiie.feedit.net;
 
+import com.mowtiie.feedit.sync.SyncLog;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +32,9 @@ public class FeedFetcher {
                 connection.setRequestProperty("If-Modified-Since", previousLastModified);
             }
 
+            long connectStart = System.currentTimeMillis();
             int status = connection.getResponseCode();
+            SyncLog.d("      HTTP " + status + " headers in " + (System.currentTimeMillis() - connectStart) + "ms");
 
             if (status == HttpURLConnection.HTTP_NOT_MODIFIED) {
                 return FetchResult.notModified(status);
@@ -39,13 +43,19 @@ public class FeedFetcher {
                 return FetchResult.error("HTTP " + status + " fetching " + url);
             }
 
+            long bodyStart = System.currentTimeMillis();
             byte[] body = readBody(connection);
+            SyncLog.d("      body " + body.length + " bytes in " + (System.currentTimeMillis() - bodyStart) + "ms");
+
             String etag = connection.getHeaderField("ETag");
             String lastModified = connection.getHeaderField("Last-Modified");
             return FetchResult.success(status, body, etag, lastModified);
 
         } catch (IOException e) {
-            return FetchResult.error(e.getMessage() != null ? e.getMessage() : "Network error");
+            SyncLog.w("      fetch threw " + e.getClass().getSimpleName() + ": " + e.getMessage()
+                    + " for " + url);
+            return FetchResult.error(e.getClass().getSimpleName()
+                    + (e.getMessage() != null ? ": " + e.getMessage() : ""));
         } finally {
             if (connection != null) {
                 connection.disconnect();
