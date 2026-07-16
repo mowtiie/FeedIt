@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.mowtiie.feedit.model.Article;
+import com.mowtiie.feedit.sync.SyncLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,13 @@ public class ArticleDao {
     public long insertOrIgnore(Article article) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = toContentValues(article);
-        return db.insertWithOnConflict("articles", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        long id = db.insertWithOnConflict("articles", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        if (id == -1) {
+             SyncLog.d("dedup: already have guid=" + article.getGuid());
+        } else {
+            SyncLog.d("insert ok id=" + id + " guid=" + article.getGuid() + " title=" + article.getTitle());
+        }
+        return id;
     }
 
     public void setRead(long articleId, boolean read) {

@@ -20,6 +20,7 @@ import com.mowtiie.feedit.net.FetchResult;
 import com.mowtiie.feedit.parser.FeedParser;
 import com.mowtiie.feedit.parser.ParsedArticle;
 import com.mowtiie.feedit.parser.ParsedFeedMeta;
+import com.mowtiie.feedit.sync.SyncLog;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -206,10 +207,13 @@ public class FeedEditViewModel extends AndroidViewModel {
         repository.saveFeed(feed, new ArrayList<>(selectedTagIds), new RepositoryCallback<Long>() {
             @Override
             public void onComplete(Long feedId) {
+                SyncLog.d("persistFeed: feedId=" + feedId + " meta=" + (meta == null ? "null" : meta.getArticles().size() + " articles parsed"));
+
                 if (meta == null || meta.getArticles().isEmpty()) {
                     finishSaved();
                     return;
                 }
+
                 List<Article> articles = new ArrayList<>();
                 long now = System.currentTimeMillis();
                 for (ParsedArticle pa : meta.getArticles()) {

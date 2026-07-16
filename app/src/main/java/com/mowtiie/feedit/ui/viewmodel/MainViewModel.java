@@ -13,6 +13,7 @@ import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
+import com.mowtiie.feedit.sync.SyncLog;
 import com.mowtiie.feedit.util.ArticleUiState;
 
 import java.util.ArrayList;
@@ -195,6 +196,8 @@ public class MainViewModel extends AndroidViewModel {
             int openMode = ft != null ? ft.getFeed().getOpenMode() : 0;
             result.add(new ArticleUiState(article, feedTitle, openMode));
         }
+
+        SyncLog.d("buildUiStates: latestArticles=" + latestArticles.size() + " latestFeeds=" + latestFeeds.size() + " -> uiStates=" + result.size());
         return result;
     }
 }
