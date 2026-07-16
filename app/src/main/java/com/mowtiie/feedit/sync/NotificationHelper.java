@@ -15,6 +15,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.ui.activities.MainActivity;
+import com.mowtiie.feedit.util.PrefsKeys;
 
 import java.util.List;
 
@@ -42,6 +43,13 @@ public final class NotificationHelper {
     }
 
     public static void notifyNewArticles(Context context, List<FeedSyncResult> results) {
+        boolean notificationsEnabled = context
+                .getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE)
+                .getBoolean(PrefsKeys.NOTIFICATIONS_ENABLED, true);
+        if (!notificationsEnabled) {
+            return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
