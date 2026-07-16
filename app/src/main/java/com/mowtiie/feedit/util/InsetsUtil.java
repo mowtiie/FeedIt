@@ -1,4 +1,4 @@
-package com.mowtiie.feedit.ui.util;
+package com.mowtiie.feedit.util;
 
 import android.view.View;
 

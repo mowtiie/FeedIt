@@ -27,9 +27,8 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.ui.adapter.ArticleAdapter;
-import com.mowtiie.feedit.ui.util.ArticleUiState;
-import com.mowtiie.feedit.ui.util.InsetsUtil;
-import com.mowtiie.feedit.ui.activities.ArticleDetailActivity;
+import com.mowtiie.feedit.util.ArticleUiState;
+import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 
 import java.util.List;

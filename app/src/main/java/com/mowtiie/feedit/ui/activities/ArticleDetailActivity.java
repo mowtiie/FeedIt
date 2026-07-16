@@ -19,7 +19,7 @@ import com.bumptech.glide.Glide;
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ActivityArticleDetailBinding;
 import com.mowtiie.feedit.model.Article;
-import com.mowtiie.feedit.ui.util.InsetsUtil;
+import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.ui.viewmodel.ArticleViewModel;
 
 import java.text.DateFormat;

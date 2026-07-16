@@ -13,7 +13,7 @@ import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
-import com.mowtiie.feedit.ui.util.ArticleUiState;
+import com.mowtiie.feedit.util.ArticleUiState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
