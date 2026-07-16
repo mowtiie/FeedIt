@@ -130,8 +130,8 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
                 binding.buttonStar.setVisibility(android.view.View.VISIBLE);
                 binding.checkboxSelect.setVisibility(android.view.View.GONE);
                 binding.buttonStar.setImageResource(article.isStarred()
-                        ? android.R.drawable.btn_star_big_on
-                        : android.R.drawable.btn_star_big_off);
+                        ? R.drawable.ic_star_filled
+                        : R.drawable.ic_star_outlined);
                 card.setCardBackgroundColor(
                         resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
             }

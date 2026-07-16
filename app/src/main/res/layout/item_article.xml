@@ -60,9 +60,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="4dp"
+            android:src="@drawable/ic_star_outlined"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/content_desc_star_toggle"
-            android:src="@android:drawable/btn_star_big_off" />
+            android:contentDescription="@string/content_desc_star_toggle"/>
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/checkbox_select"
