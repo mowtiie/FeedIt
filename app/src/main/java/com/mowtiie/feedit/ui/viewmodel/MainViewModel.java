@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -120,6 +121,10 @@ public class MainViewModel extends AndroidViewModel {
         refresh();
     }
 
+    public String getSearchQuery() {
+        return searchQuery;
+    }
+
     public void setSortOrder(ArticleDao.SortOrder order) {
         this.sortOrder = order;
         prefs.edit().putString(KEY_SORT_ORDER, order.name()).apply();
@@ -157,6 +162,20 @@ public class MainViewModel extends AndroidViewModel {
 
     public void markAllRead() {
         repository.markAllRead(scopeFeedId, scopeTagId);
+        refresh();
+    }
+
+    public void markSelectedRead(Set<Long> articleIds, boolean read) {
+        for (Long id : articleIds) {
+            repository.setArticleRead(id, read);
+        }
+        refresh();
+    }
+
+    public void starSelected(Set<Long> articleIds, boolean starred) {
+        for (Long id : articleIds) {
+            repository.setArticleStarred(id, starred);
+        }
         refresh();
     }
 

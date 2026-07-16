@@ -18,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
@@ -38,7 +39,9 @@ import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements ArticleAdapter.Listener {
 
@@ -50,6 +53,47 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
     private ActionBarDrawerToggle drawerToggle;
 
     private MenuItem currentlyCheckedItem;
+
+    private final Set<Long> selectedArticleIds = new HashSet<>();
+    private ActionMode actionMode;
+
+    private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            getMenuInflater().inflate(R.menu.menu_article_selection, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            int id = item.getItemId();
+            if (id == R.id.action_mark_read) {
+                viewModel.markSelectedRead(selectedArticleIds, true);
+            } else if (id == R.id.action_mark_unread) {
+                viewModel.markSelectedRead(selectedArticleIds, false);
+            } else if (id == R.id.action_star_selected) {
+                viewModel.starSelected(selectedArticleIds, true);
+            } else if (id == R.id.action_unstar_selected) {
+                viewModel.starSelected(selectedArticleIds, false);
+            } else {
+                return false;
+            }
+            mode.finish();
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            actionMode = null;
+            selectedArticleIds.clear();
+            adapter.updateSelection(selectedArticleIds, false);
+        }
+    };
 
     private final ActivityResultLauncher<String> requestNotificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -105,7 +149,9 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                if (actionMode != null) {
+                    actionMode.finish();
+                } else if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     binding.drawerLayout.closeDrawer(GravityCompat.START);
                 } else {
                     setEnabled(false);
@@ -180,10 +226,27 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
     private void observeViewModel() {
         viewModel.getArticleUiStates().observe(this, items -> {
             adapter.submitList(items);
-            binding.textEmptyState.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+            updateEmptyState(items);
         });
         viewModel.getTags().observe(this, this::populateTagGroup);
         viewModel.getFeedsWithTags().observe(this, this::populateFeedGroup);
+    }
+
+    private void updateEmptyState(List<ArticleUiState> items) {
+        if (!items.isEmpty()) {
+            binding.textEmptyState.setVisibility(View.GONE);
+            return;
+        }
+        binding.textEmptyState.setVisibility(View.VISIBLE);
+
+        String query = viewModel.getSearchQuery();
+        if (query != null && !query.trim().isEmpty()) {
+            binding.textEmptyState.setText(R.string.empty_state_no_results);
+        } else if (viewModel.isUnreadOnly()) {
+            binding.textEmptyState.setText(R.string.empty_state_all_caught_up);
+        } else {
+            binding.textEmptyState.setText(R.string.empty_state_no_articles);
+        }
     }
 
     private void populateTagGroup(List<Tag> tags) {
@@ -282,6 +345,11 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
 
     @Override
     public void onArticleClicked(ArticleUiState item) {
+        if (actionMode != null) {
+            toggleSelection(item);
+            return;
+        }
+
         viewModel.markRead(item.getArticle());
 
         if (item.getFeedOpenMode() == Feed.OPEN_MODE_BROWSER) {
@@ -291,6 +359,35 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
             intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_ID, item.getArticle().getId());
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onArticleLongClicked(ArticleUiState item) {
+        if (actionMode == null) {
+            actionMode = startSupportActionMode(actionModeCallback);
+        }
+        toggleSelection(item);
+    }
+
+    private void toggleSelection(ArticleUiState item) {
+        long id = item.getArticle().getId();
+        if (selectedArticleIds.contains(id)) {
+            selectedArticleIds.remove(id);
+        } else {
+            selectedArticleIds.add(id);
+        }
+
+        if (selectedArticleIds.isEmpty()) {
+            if (actionMode != null) {
+                actionMode.finish();
+            }
+            return;
+        }
+
+        if (actionMode != null) {
+            actionMode.setTitle(getString(R.string.selection_count_format, selectedArticleIds.size()));
+        }
+        adapter.updateSelection(selectedArticleIds, true);
     }
 
     private void openInBrowser(String url) {
