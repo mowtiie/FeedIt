@@ -13,15 +13,19 @@
         android:theme="@style/Theme.FeedIt">
         <activity
             android:name=".ui.activities.AddEditFeedActivity"
+            android:parentActivityName=".ui.activities.MainActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activities.TagManagementActivity"
+            android:parentActivityName=".ui.activities.MainActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activities.FeedManagementActivity"
+            android:parentActivityName=".ui.activities.MainActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activities.ArticleDetailActivity"
+            android:parentActivityName=".ui.activities.MainActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activities.MainActivity"
