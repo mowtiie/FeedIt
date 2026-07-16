@@ -175,10 +175,13 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
 
         if (id == R.id.nav_all) {
             viewModel.selectAll();
+            setTitle(R.string.app_name);
         } else if (id == R.id.nav_unread) {
             viewModel.selectUnread();
+            setTitle(R.string.nav_unread);
         } else if (id == R.id.nav_starred) {
             viewModel.selectStarred();
+            setTitle(R.string.nav_starred);
         }
 
         binding.drawerLayout.closeDrawer(GravityCompat.START);
