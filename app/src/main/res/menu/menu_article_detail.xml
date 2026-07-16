@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/action_star"
-        android:icon="@android:drawable/btn_star_big_off"
+        android:icon="@drawable/ic_star_filled"
         android:title="@string/action_star"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_share"
-        android:icon="@android:drawable/ic_menu_share"
+        android:icon="@drawable/ic_share"
         android:title="@string/action_share"
         app:showAsAction="ifRoom" />
 
