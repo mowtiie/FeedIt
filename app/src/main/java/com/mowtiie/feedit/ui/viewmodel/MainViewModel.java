@@ -13,14 +13,15 @@ import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
-import com.mowtiie.feedit.sync.SyncLog;
 import com.mowtiie.feedit.util.ArticleUiState;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -145,20 +146,23 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void toggleRead(Article article) {
-        repository.setArticleRead(article.getId(), !article.isRead());
-        refresh();
+        boolean newValue = !article.isRead();
+        updateArticleOptimistically(article.getId(), copy -> copy.setRead(newValue));
+        repository.setArticleRead(article.getId(), newValue);
     }
 
     public void markRead(Article article) {
-        if (!article.isRead()) {
-            repository.setArticleRead(article.getId(), true);
-            refresh();
+        if (article.isRead()) {
+            return;
         }
+        updateArticleOptimistically(article.getId(), copy -> copy.setRead(true));
+        repository.setArticleRead(article.getId(), true);
     }
 
     public void toggleStarred(Article article) {
-        repository.setArticleStarred(article.getId(), !article.isStarred());
-        refresh();
+        boolean newValue = !article.isStarred();
+        updateArticleOptimistically(article.getId(), copy -> copy.setStarred(newValue));
+        repository.setArticleStarred(article.getId(), newValue);
     }
 
     public void markAllRead() {
@@ -167,21 +171,55 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void markSelectedRead(Set<Long> articleIds, boolean read) {
+        updateArticlesOptimistically(articleIds, copy -> copy.setRead(read));
         for (Long id : articleIds) {
             repository.setArticleRead(id, read);
         }
-        refresh();
     }
 
     public void starSelected(Set<Long> articleIds, boolean starred) {
+        updateArticlesOptimistically(articleIds, copy -> copy.setStarred(starred));
         for (Long id : articleIds) {
             repository.setArticleStarred(id, starred);
         }
-        refresh();
     }
 
     public void refresh() {
         repository.loadArticles(scopeFeedId, scopeTagId, unreadOnly, starredOnly, searchQuery, sortOrder);
+    }
+
+    private void updateArticleOptimistically(long articleId, Consumer<Article> mutator) {
+        updateArticlesOptimistically(Collections.singleton(articleId), mutator);
+    }
+
+    private void updateArticlesOptimistically(Set<Long> articleIds, Consumer<Article> mutator) {
+        for (int i = 0; i < latestArticles.size(); i++) {
+            Article original = latestArticles.get(i);
+            if (articleIds.contains(original.getId())) {
+                Article copy = copyOf(original);
+                mutator.accept(copy);
+                latestArticles.set(i, copy);
+            }
+        }
+        articleUiStates.setValue(buildUiStates());
+    }
+
+    private Article copyOf(Article a) {
+        Article copy = new Article();
+        copy.setId(a.getId());
+        copy.setFeedId(a.getFeedId());
+        copy.setGuid(a.getGuid());
+        copy.setTitle(a.getTitle());
+        copy.setLink(a.getLink());
+        copy.setAuthor(a.getAuthor());
+        copy.setSummary(a.getSummary());
+        copy.setContent(a.getContent());
+        copy.setImageUrl(a.getImageUrl());
+        copy.setPublishedAt(a.getPublishedAt());
+        copy.setFetchedAt(a.getFetchedAt());
+        copy.setRead(a.isRead());
+        copy.setStarred(a.isStarred());
+        return copy;
     }
 
     private List<ArticleUiState> buildUiStates() {
@@ -196,8 +234,6 @@ public class MainViewModel extends AndroidViewModel {
             int openMode = ft != null ? ft.getFeed().getOpenMode() : 0;
             result.add(new ArticleUiState(article, feedTitle, openMode));
         }
-
-        SyncLog.d("buildUiStates: latestArticles=" + latestArticles.size() + " latestFeeds=" + latestFeeds.size() + " -> uiStates=" + result.size());
         return result;
     }
 }
