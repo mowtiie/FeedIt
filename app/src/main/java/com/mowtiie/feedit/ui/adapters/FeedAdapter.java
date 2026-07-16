@@ -22,6 +22,8 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
     public interface Listener {
         void onFeedClicked(FeedTags item);
 
+        void onEditClicked(FeedTags item);
+
         void onDeleteClicked(FeedTags item);
     }
 
@@ -98,6 +100,7 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
             }
 
             binding.getRoot().setOnClickListener(v -> listener.onFeedClicked(item));
+            binding.buttonEditFeed.setOnClickListener(v -> listener.onEditClicked(item));
             binding.buttonDeleteFeed.setOnClickListener(v -> listener.onDeleteClicked(item));
         }
     }

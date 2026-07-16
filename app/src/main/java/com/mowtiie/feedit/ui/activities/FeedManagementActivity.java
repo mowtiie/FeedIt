@@ -54,7 +54,7 @@ public class FeedManagementActivity extends AppCompatActivity implements FeedAda
     @Override
     protected void onResume() {
         super.onResume();
-        viewModel.refresh();
+        viewModel.refresh(); // pick up anything changed in AddEditFeedActivity since we last showed
     }
 
     @Override
@@ -76,8 +76,17 @@ public class FeedManagementActivity extends AppCompatActivity implements FeedAda
         return super.onOptionsItemSelected(item);
     }
 
+    /** Card tap (anywhere except Edit/Delete) — view this feed's articles, not edit it. */
     @Override
     public void onFeedClicked(FeedTags item) {
+        Intent intent = new Intent(this, FeedArticlesActivity.class);
+        intent.putExtra(FeedArticlesActivity.EXTRA_FEED_ID, item.getFeed().getId());
+        intent.putExtra(FeedArticlesActivity.EXTRA_FEED_TITLE, item.getFeed().getTitle());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onEditClicked(FeedTags item) {
         Intent intent = new Intent(this, AddEditFeedActivity.class);
         intent.putExtra(AddEditFeedActivity.EXTRA_FEED_ID, item.getFeed().getId());
         startActivity(intent);

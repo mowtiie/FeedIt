@@ -17,9 +17,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FeedIt">
         <activity
-            android:name=".ui.activities.SettingsActivity"
-            android:parentActivityName=".ui.activities.MainActivity"
+            android:name=".ui.activities.FeedArticlesActivity"
+            android:parentActivityName=".ui.activities.FeedManagementActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.SettingsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.activities.MainActivity" />
         <activity
             android:name=".ui.activities.AddEditFeedActivity"
             android:exported="false"

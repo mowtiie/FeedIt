@@ -63,6 +63,7 @@
     <string name="action_create">Create</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
 
     <!-- Feed / Tag management -->
     <string name="title_manage_feeds">Manage Feeds</string>
@@ -109,4 +110,5 @@
     <!-- Empty states -->
     <string name="empty_state_no_results">No matching articles</string>
     <string name="empty_state_all_caught_up">You\'re all caught up!</string>
+    <string name="empty_state_no_articles_for_feed">No articles yet for this feed.</string>
 </resources>

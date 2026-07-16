@@ -16,14 +16,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="14dp">
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="14dp">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_feed_title"
@@ -51,14 +50,34 @@
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/button_delete_feed"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/content_desc_delete_feed"
-            android:src="@android:drawable/ic_menu_delete" />
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_edit_feed"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/action_edit" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_delete_feed"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/action_delete" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
