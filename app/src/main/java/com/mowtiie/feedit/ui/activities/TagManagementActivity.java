@@ -6,7 +6,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -21,7 +20,7 @@ import com.mowtiie.feedit.ui.viewmodel.TagListViewModel;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.TagColorPicker;
 
-public class TagManagementActivity extends AppCompatActivity implements TagAdapter.Listener {
+public class TagManagementActivity extends FeedItActivity implements TagAdapter.Listener {
 
     private ActivityTagManagementBinding binding;
     private TagListViewModel viewModel;
@@ -40,6 +39,7 @@ public class TagManagementActivity extends AppCompatActivity implements TagAdapt
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        setTitle(R.string.title_manage_tags);
 
         viewModel = new ViewModelProvider(this).get(TagListViewModel.class);
 
@@ -127,6 +127,7 @@ public class TagManagementActivity extends AppCompatActivity implements TagAdapt
                     viewModel.saveTag(tag, new RepositoryCallback<Long>() {
                         @Override
                         public void onComplete(Long result) {
+                            // list refreshes on its own — saveTag's repository call reloads tags internally
                         }
 
                         @Override

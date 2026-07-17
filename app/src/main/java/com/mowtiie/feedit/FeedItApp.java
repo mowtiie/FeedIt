@@ -12,6 +12,7 @@ public class FeedItApp extends Application {
     public void onCreate() {
         super.onCreate();
         ThemeManager.applyPersistedDarkMode(this);
+        ThemeManager.applyDynamicColorsIfEnabled(this);
         NotificationHelper.ensureChannel(this);
         SyncScheduler.schedulePeriodicSync(this);
     }

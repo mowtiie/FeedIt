@@ -11,7 +11,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,7 +26,7 @@ import com.mowtiie.feedit.util.InsetsUtil;
 import java.util.HashSet;
 import java.util.Set;
 
-public class FeedArticlesActivity extends AppCompatActivity implements ArticleAdapter.Listener {
+public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapter.Listener {
 
     public static final String EXTRA_FEED_ID = "extra_feed_id";
     public static final String EXTRA_FEED_TITLE = "extra_feed_title";

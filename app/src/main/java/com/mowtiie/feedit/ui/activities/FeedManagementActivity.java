@@ -7,7 +7,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -19,7 +18,7 @@ import com.mowtiie.feedit.ui.adapters.FeedAdapter;
 import com.mowtiie.feedit.ui.viewmodel.FeedListViewModel;
 import com.mowtiie.feedit.util.InsetsUtil;
 
-public class FeedManagementActivity extends AppCompatActivity implements FeedAdapter.Listener {
+public class FeedManagementActivity extends FeedItActivity implements FeedAdapter.Listener {
 
     private ActivityFeedManagementBinding binding;
     private FeedListViewModel viewModel;
@@ -38,6 +37,7 @@ public class FeedManagementActivity extends AppCompatActivity implements FeedAda
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        setTitle(R.string.title_manage_feeds);
 
         viewModel = new ViewModelProvider(this).get(FeedListViewModel.class);
 
@@ -54,7 +54,7 @@ public class FeedManagementActivity extends AppCompatActivity implements FeedAda
     @Override
     protected void onResume() {
         super.onResume();
-        viewModel.refresh(); // pick up anything changed in AddEditFeedActivity since we last showed
+        viewModel.refresh();
     }
 
     @Override
@@ -76,7 +76,6 @@ public class FeedManagementActivity extends AppCompatActivity implements FeedAda
         return super.onOptionsItemSelected(item);
     }
 
-    /** Card tap (anywhere except Edit/Delete) — view this feed's articles, not edit it. */
     @Override
     public void onFeedClicked(FeedTags item) {
         Intent intent = new Intent(this, FeedArticlesActivity.class);

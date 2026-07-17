@@ -46,6 +46,8 @@ public class SettingsViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> notificationsEnabled = new MutableLiveData<>();
     private final MutableLiveData<String> darkMode = new MutableLiveData<>();
     private final MutableLiveData<String> startupPage = new MutableLiveData<>();
+    private final MutableLiveData<String> contrastLevel = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> dynamicColorsEnabled = new MutableLiveData<>();
     private final MutableLiveData<Boolean> opmlBusy = new MutableLiveData<>(false);
     private final MutableLiveData<String> opmlMessage = new MutableLiveData<>();
 
@@ -56,6 +58,8 @@ public class SettingsViewModel extends AndroidViewModel {
         notificationsEnabled.setValue(prefs.getBoolean(PrefsKeys.NOTIFICATIONS_ENABLED, true));
         darkMode.setValue(prefs.getString(PrefsKeys.DARK_MODE, "system"));
         startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
+        contrastLevel.setValue(prefs.getString(PrefsKeys.CONTRAST_LEVEL, PrefsKeys.CONTRAST_STANDARD));
+        dynamicColorsEnabled.setValue(prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false));
     }
 
     public LiveData<Boolean> getWifiOnly() {
@@ -72,6 +76,14 @@ public class SettingsViewModel extends AndroidViewModel {
 
     public LiveData<String> getStartupPage() {
         return startupPage;
+    }
+
+    public LiveData<String> getContrastLevel() {
+        return contrastLevel;
+    }
+
+    public LiveData<Boolean> getDynamicColorsEnabled() {
+        return dynamicColorsEnabled;
     }
 
     public LiveData<Boolean> getOpmlBusy() {
@@ -102,6 +114,16 @@ public class SettingsViewModel extends AndroidViewModel {
     public void setStartupPage(String page) {
         prefs.edit().putString(PrefsKeys.STARTUP_PAGE, page).apply();
         startupPage.setValue(page);
+    }
+
+    public void setContrastLevel(String level) {
+        prefs.edit().putString(PrefsKeys.CONTRAST_LEVEL, level).apply();
+        contrastLevel.setValue(level);
+    }
+
+    public void setDynamicColorsEnabled(boolean enabled) {
+        prefs.edit().putBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, enabled).apply();
+        dynamicColorsEnabled.setValue(enabled);
     }
 
     public void exportOpml(Uri targetUri) {

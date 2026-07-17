@@ -8,7 +8,6 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.mowtiie.feedit.R;
@@ -17,7 +16,7 @@ import com.mowtiie.feedit.ui.viewmodel.SettingsViewModel;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends FeedItActivity {
 
     private ActivitySettingsBinding binding;
     private SettingsViewModel viewModel;
@@ -92,6 +91,27 @@ public class SettingsActivity extends AppCompatActivity {
             viewModel.setStartupPage(page);
         });
 
+        binding.toggleContrast.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) {
+                return;
+            }
+            String level;
+            if (checkedId == R.id.button_contrast_medium) {
+                level = PrefsKeys.CONTRAST_MEDIUM;
+            } else if (checkedId == R.id.button_contrast_high) {
+                level = PrefsKeys.CONTRAST_HIGH;
+            } else {
+                level = PrefsKeys.CONTRAST_STANDARD;
+            }
+            boolean changed = !level.equals(viewModel.getContrastLevel().getValue());
+            viewModel.setContrastLevel(level);
+            if (changed) {
+                recreate();
+            }
+        });
+
+        binding.switchDynamicColors.setOnCheckedChangeListener((button, checked) -> viewModel.setDynamicColorsEnabled(checked));
+
         binding.buttonImportOpml.setOnClickListener(v -> openOpmlLauncher.launch(new String[]{"*/*"}));
         binding.buttonExportOpml.setOnClickListener(v -> createOpmlLauncher.launch("feedit-subscriptions.opml"));
     }
@@ -123,6 +143,20 @@ public class SettingsActivity extends AppCompatActivity {
             }
             binding.toggleStartupPage.check(id);
         });
+
+        viewModel.getContrastLevel().observe(this, level -> {
+            int id;
+            if (PrefsKeys.CONTRAST_MEDIUM.equals(level)) {
+                id = R.id.button_contrast_medium;
+            } else if (PrefsKeys.CONTRAST_HIGH.equals(level)) {
+                id = R.id.button_contrast_high;
+            } else {
+                id = R.id.button_contrast_standard;
+            }
+            binding.toggleContrast.check(id);
+        });
+
+        viewModel.getDynamicColorsEnabled().observe(this, enabled -> binding.switchDynamicColors.setChecked(enabled));
 
         viewModel.getOpmlBusy().observe(this, busy -> {
             binding.progressOpml.setVisibility(busy ? View.VISIBLE : View.GONE);

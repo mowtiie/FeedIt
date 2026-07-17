@@ -10,7 +10,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -23,7 +22,7 @@ import com.mowtiie.feedit.util.InsetsUtil;
 import java.text.DateFormat;
 import java.util.Date;
 
-public class ArticleDetailActivity extends AppCompatActivity {
+public class ArticleDetailActivity extends FeedItActivity {
 
     public static final String EXTRA_ARTICLE_ID = "extra_article_id";
 

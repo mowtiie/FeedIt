@@ -16,7 +16,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
@@ -42,7 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity implements ArticleAdapter.Listener {
+public class MainActivity extends FeedItActivity implements ArticleAdapter.Listener {
 
     public static final String EXTRA_OPEN_FEED_ID = "extra_open_feed_id";
 

@@ -69,9 +69,9 @@ public class TagAdapter extends ListAdapter<Tag, TagAdapter.ViewHolder> {
             binding.textTagName.setText(tag.getName());
             if (tag.getColor() != null) {
                 try {
-                    binding.viewTagColor.setBackgroundTintList(
-                            ColorStateList.valueOf(Color.parseColor(tag.getColor())));
+                    binding.viewTagColor.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(tag.getColor())));
                 } catch (IllegalArgumentException ignored) {
+                    // malformed color string — leave the default swatch color
                 }
             }
             binding.buttonEditTag.setOnClickListener(v -> listener.onEditClicked(tag));

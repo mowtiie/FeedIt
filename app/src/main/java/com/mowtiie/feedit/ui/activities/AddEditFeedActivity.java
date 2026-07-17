@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.chip.Chip;
@@ -26,7 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AddEditFeedActivity extends AppCompatActivity {
+public class AddEditFeedActivity extends FeedItActivity {
 
     public static final String EXTRA_FEED_ID = "extra_feed_id";
 
