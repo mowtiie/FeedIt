@@ -15,6 +15,7 @@ import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ActivitySettingsBinding;
 import com.mowtiie.feedit.ui.viewmodel.SettingsViewModel;
 import com.mowtiie.feedit.util.InsetsUtil;
+import com.mowtiie.feedit.util.PrefsKeys;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -48,6 +49,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        setTitle(R.string.title_settings);
 
         viewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
 
@@ -75,6 +77,21 @@ public class SettingsActivity extends AppCompatActivity {
             viewModel.setDarkMode(mode);
         });
 
+        binding.toggleStartupPage.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) {
+                return;
+            }
+            String page;
+            if (checkedId == R.id.button_startup_unread) {
+                page = PrefsKeys.STARTUP_PAGE_UNREAD;
+            } else if (checkedId == R.id.button_startup_starred) {
+                page = PrefsKeys.STARTUP_PAGE_STARRED;
+            } else {
+                page = PrefsKeys.STARTUP_PAGE_ALL;
+            }
+            viewModel.setStartupPage(page);
+        });
+
         binding.buttonImportOpml.setOnClickListener(v -> openOpmlLauncher.launch(new String[]{"*/*"}));
         binding.buttonExportOpml.setOnClickListener(v -> createOpmlLauncher.launch("feedit-subscriptions.opml"));
     }
@@ -93,6 +110,18 @@ public class SettingsActivity extends AppCompatActivity {
                 id = R.id.button_dark_system;
             }
             binding.toggleDarkMode.check(id);
+        });
+
+        viewModel.getStartupPage().observe(this, page -> {
+            int id;
+            if (PrefsKeys.STARTUP_PAGE_UNREAD.equals(page)) {
+                id = R.id.button_startup_unread;
+            } else if (PrefsKeys.STARTUP_PAGE_STARRED.equals(page)) {
+                id = R.id.button_startup_starred;
+            } else {
+                id = R.id.button_startup_all;
+            }
+            binding.toggleStartupPage.check(id);
         });
 
         viewModel.getOpmlBusy().observe(this, busy -> {

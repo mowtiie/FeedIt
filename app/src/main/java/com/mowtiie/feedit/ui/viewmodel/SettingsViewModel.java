@@ -45,6 +45,7 @@ public class SettingsViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> wifiOnly = new MutableLiveData<>();
     private final MutableLiveData<Boolean> notificationsEnabled = new MutableLiveData<>();
     private final MutableLiveData<String> darkMode = new MutableLiveData<>();
+    private final MutableLiveData<String> startupPage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> opmlBusy = new MutableLiveData<>(false);
     private final MutableLiveData<String> opmlMessage = new MutableLiveData<>();
 
@@ -54,6 +55,7 @@ public class SettingsViewModel extends AndroidViewModel {
         wifiOnly.setValue(prefs.getBoolean(PrefsKeys.SYNC_WIFI_ONLY, false));
         notificationsEnabled.setValue(prefs.getBoolean(PrefsKeys.NOTIFICATIONS_ENABLED, true));
         darkMode.setValue(prefs.getString(PrefsKeys.DARK_MODE, "system"));
+        startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
     }
 
     public LiveData<Boolean> getWifiOnly() {
@@ -66,6 +68,10 @@ public class SettingsViewModel extends AndroidViewModel {
 
     public LiveData<String> getDarkMode() {
         return darkMode;
+    }
+
+    public LiveData<String> getStartupPage() {
+        return startupPage;
     }
 
     public LiveData<Boolean> getOpmlBusy() {
@@ -91,6 +97,11 @@ public class SettingsViewModel extends AndroidViewModel {
         prefs.edit().putString(PrefsKeys.DARK_MODE, mode).apply();
         darkMode.setValue(mode);
         ThemeManager.applyDarkMode(mode);
+    }
+
+    public void setStartupPage(String page) {
+        prefs.edit().putString(PrefsKeys.STARTUP_PAGE, page).apply();
+        startupPage.setValue(page);
     }
 
     public void exportOpml(Uri targetUri) {
@@ -175,6 +186,7 @@ public class SettingsViewModel extends AndroidViewModel {
                         feedDao.setTagsForFeed(feedId, tagIds);
                         imported++;
                     } catch (SQLiteConstraintException alreadySubscribed) {
+                        // Same feed URL already exists — skip it rather than duplicate.
                     }
                 }
 

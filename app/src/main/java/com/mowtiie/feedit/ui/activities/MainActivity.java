@@ -36,6 +36,7 @@ import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
+import com.mowtiie.feedit.util.PrefsKeys;
 
 import java.util.HashSet;
 import java.util.List;
@@ -119,7 +120,31 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         long openFeedId = getIntent().getLongExtra(EXTRA_OPEN_FEED_ID, -1L);
         if (openFeedId != -1L) {
             viewModel.selectFeed(openFeedId);
+        } else {
+            applyStartupPage();
         }
+    }
+
+    private void applyStartupPage() {
+        String startupPage = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE)
+                .getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL);
+
+        int checkedItemId;
+        if (PrefsKeys.STARTUP_PAGE_UNREAD.equals(startupPage)) {
+            viewModel.selectUnread();
+            setTitle(R.string.nav_unread);
+            checkedItemId = R.id.nav_unread;
+        } else if (PrefsKeys.STARTUP_PAGE_STARRED.equals(startupPage)) {
+            viewModel.selectStarred();
+            setTitle(R.string.nav_starred);
+            checkedItemId = R.id.nav_starred;
+        } else {
+            viewModel.selectAll();
+            setTitle(R.string.app_name);
+            checkedItemId = R.id.nav_all;
+        }
+
+        binding.navView.getMenu().findItem(checkedItemId).setChecked(true);
     }
 
     private void maybeRequestNotificationPermission() {
