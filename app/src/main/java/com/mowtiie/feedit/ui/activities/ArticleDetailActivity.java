@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -15,12 +14,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.bumptech.glide.Glide;
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ActivityArticleDetailBinding;
 import com.mowtiie.feedit.model.Article;
-import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.ui.viewmodel.ArticleViewModel;
+import com.mowtiie.feedit.util.InsetsUtil;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -64,7 +62,10 @@ public class ArticleDetailActivity extends AppCompatActivity {
             return;
         }
 
-        binding.textTitle.setText(article.getTitle());
+        if (article.getTitle() != null) {
+            setTitle(article.getTitle());
+            binding.collapsingToolbar.setTitle(article.getTitle());
+        }
 
         StringBuilder meta = new StringBuilder();
         if (article.getAuthor() != null && !article.getAuthor().isEmpty()) {
@@ -85,13 +86,6 @@ public class ArticleDetailActivity extends AppCompatActivity {
             binding.textContent.setText(HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT));
         }
 
-        if (article.getImageUrl() != null) {
-            binding.imageHero.setVisibility(View.VISIBLE);
-            Glide.with(this).load(article.getImageUrl()).centerCrop().into(binding.imageHero);
-        } else {
-            binding.imageHero.setVisibility(View.GONE);
-        }
-
         invalidateOptionsMenu();
     }
 
@@ -106,8 +100,8 @@ public class ArticleDetailActivity extends AppCompatActivity {
         Article article = viewModel.getArticle().getValue();
         if (article != null) {
             menu.findItem(R.id.action_star).setIcon(article.isStarred()
-                    ? R.drawable.ic_star_filled
-                    : R.drawable.ic_star_outlined);
+                    ? android.R.drawable.btn_star_big_on
+                    : android.R.drawable.btn_star_big_off);
             menu.findItem(R.id.action_toggle_read).setTitle(article.isRead()
                     ? R.string.action_mark_unread
                     : R.string.action_mark_read);

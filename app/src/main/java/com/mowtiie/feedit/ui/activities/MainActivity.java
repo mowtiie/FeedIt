@@ -279,9 +279,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         if (id == R.id.action_sort) {
             showSortDialog();
             return true;
-        } else if (id == R.id.action_filter) {
-            showFilterDialog();
-            return true;
         } else if (id == R.id.action_mark_all_read) {
             viewModel.markAllRead();
             return true;
@@ -305,22 +302,6 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
                     viewModel.setSortOrder(values[which]);
                     dialog.dismiss();
                 })
-                .show();
-    }
-
-    private void showFilterDialog() {
-        boolean[] checked = {viewModel.isUnreadOnly(), viewModel.isStarredOnly()};
-        String[] labels = {
-                getString(R.string.filter_unread_only),
-                getString(R.string.filter_starred_only)
-        };
-
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.filter_dialog_title)
-                .setMultiChoiceItems(labels, checked, (dialog, which, isChecked) -> checked[which] = isChecked)
-                .setPositiveButton(R.string.filter_apply,
-                        (dialog, which) -> viewModel.applyReadStateFilter(checked[0], checked[1]))
-                .setNegativeButton(R.string.filter_cancel, null)
                 .show();
     }
 
@@ -380,10 +361,5 @@ public class MainActivity extends AppCompatActivity implements ArticleAdapter.Li
         } catch (ActivityNotFoundException e) {
             Toast.makeText(this, "No browser app found", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    public void onStarToggled(ArticleUiState item) {
-        viewModel.toggleStarred(item.getArticle());
     }
 }

@@ -55,14 +55,15 @@
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/button_star"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <ImageView
+            android:id="@+id/image_star_indicator"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_marginStart="4dp"
-            android:src="@drawable/ic_star_outlined"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/content_desc_star_toggle"/>
+            android:clickable="false"
+            android:focusable="false"
+            android:src="@android:drawable/btn_star_big_on"
+            android:visibility="gone" />
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/checkbox_select"

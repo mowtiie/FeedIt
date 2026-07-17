@@ -197,9 +197,4 @@ public class FeedArticlesActivity extends AppCompatActivity implements ArticleAd
             Toast.makeText(this, "No browser app found", Toast.LENGTH_SHORT).show();
         }
     }
-
-    @Override
-    public void onStarToggled(ArticleUiState item) {
-        viewModel.toggleStarred(item.getArticle());
-    }
 }

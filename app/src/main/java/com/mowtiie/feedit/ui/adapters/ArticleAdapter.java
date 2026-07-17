@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -30,8 +31,6 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
         void onArticleClicked(ArticleUiState item);
 
         void onArticleLongClicked(ArticleUiState item);
-
-        void onStarToggled(ArticleUiState item);
     }
 
     private static final DiffUtil.ItemCallback<ArticleUiState> DIFF_CALLBACK =
@@ -120,20 +119,15 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
 
             MaterialCardView card = binding.getRoot();
             if (selectionMode) {
-                binding.buttonStar.setVisibility(android.view.View.GONE);
-                binding.checkboxSelect.setVisibility(android.view.View.VISIBLE);
+                binding.imageStarIndicator.setVisibility(View.GONE);
+                binding.checkboxSelect.setVisibility(View.VISIBLE);
                 binding.checkboxSelect.setChecked(isSelected);
                 card.setCardBackgroundColor(resolveThemeColor(card.getContext(),
-                        isSelected ? com.google.android.material.R.attr.colorPrimaryContainer
-                                : com.google.android.material.R.attr.colorSurface));
+                        com.google.android.material.R.attr.colorPrimaryContainer));
             } else {
-                binding.buttonStar.setVisibility(android.view.View.VISIBLE);
-                binding.checkboxSelect.setVisibility(android.view.View.GONE);
-                binding.buttonStar.setImageResource(article.isStarred()
-                        ? R.drawable.ic_star_filled
-                        : R.drawable.ic_star_outlined);
-                card.setCardBackgroundColor(
-                        resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
+                binding.imageStarIndicator.setVisibility(article.isStarred() ? View.VISIBLE : View.GONE);
+                binding.checkboxSelect.setVisibility(View.GONE);
+                card.setCardBackgroundColor(resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
             }
 
             card.setOnClickListener(v -> listener.onArticleClicked(item));
@@ -141,7 +135,6 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.V
                 listener.onArticleLongClicked(item);
                 return true;
             });
-            binding.buttonStar.setOnClickListener(v -> listener.onStarToggled(item));
         }
 
         private static int resolveThemeColor(Context context, int attrResId) {
