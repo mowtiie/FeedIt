@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ActivitySettingsBinding;
 import com.mowtiie.feedit.ui.viewmodel.SettingsViewModel;
@@ -112,6 +113,8 @@ public class SettingsActivity extends FeedItActivity {
 
         binding.switchDynamicColors.setOnCheckedChangeListener((button, checked) -> viewModel.setDynamicColorsEnabled(checked));
 
+        binding.rowArticleLayout.setOnClickListener(v -> showArticleLayoutDialog());
+
         binding.buttonImportOpml.setOnClickListener(v -> openOpmlLauncher.launch(new String[]{"*/*"}));
         binding.buttonExportOpml.setOnClickListener(v -> createOpmlLauncher.launch("feedit-subscriptions.opml"));
     }
@@ -158,6 +161,9 @@ public class SettingsActivity extends FeedItActivity {
 
         viewModel.getDynamicColorsEnabled().observe(this, enabled -> binding.switchDynamicColors.setChecked(enabled));
 
+        viewModel.getArticleLayoutStyle().observe(this, style ->
+                binding.textArticleLayoutValue.setText(articleLayoutDisplayName(style)));
+
         viewModel.getOpmlBusy().observe(this, busy -> {
             binding.progressOpml.setVisibility(busy ? View.VISIBLE : View.GONE);
             binding.buttonImportOpml.setEnabled(!busy);
@@ -169,6 +175,49 @@ public class SettingsActivity extends FeedItActivity {
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void showArticleLayoutDialog() {
+        String[] values = {
+                PrefsKeys.LAYOUT_LIST, PrefsKeys.LAYOUT_COMPACT, PrefsKeys.LAYOUT_CARD,
+                PrefsKeys.LAYOUT_MAGAZINE, PrefsKeys.LAYOUT_DETAILED
+        };
+        String[] labels = {
+                getString(R.string.option_layout_list), getString(R.string.option_layout_compact),
+                getString(R.string.option_layout_card), getString(R.string.option_layout_magazine),
+                getString(R.string.option_layout_detailed)
+        };
+
+        String current = viewModel.getArticleLayoutStyle().getValue();
+        int checkedIndex = 2;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i].equals(current)) {
+                checkedIndex = i;
+                break;
+            }
+        }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_article_layout_title)
+                .setSingleChoiceItems(labels, checkedIndex, (dialog, which) -> {
+                    viewModel.setArticleLayoutStyle(values[which]);
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    private String articleLayoutDisplayName(String style) {
+        if (PrefsKeys.LAYOUT_LIST.equals(style)) {
+            return getString(R.string.option_layout_list);
+        } else if (PrefsKeys.LAYOUT_COMPACT.equals(style)) {
+            return getString(R.string.option_layout_compact);
+        } else if (PrefsKeys.LAYOUT_MAGAZINE.equals(style)) {
+            return getString(R.string.option_layout_magazine);
+        } else if (PrefsKeys.LAYOUT_DETAILED.equals(style)) {
+            return getString(R.string.option_layout_detailed);
+        } else {
+            return getString(R.string.option_layout_card);
+        }
     }
 
     @Override

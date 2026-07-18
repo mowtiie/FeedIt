@@ -48,6 +48,7 @@ public class SettingsViewModel extends AndroidViewModel {
     private final MutableLiveData<String> startupPage = new MutableLiveData<>();
     private final MutableLiveData<String> contrastLevel = new MutableLiveData<>();
     private final MutableLiveData<Boolean> dynamicColorsEnabled = new MutableLiveData<>();
+    private final MutableLiveData<String> articleLayoutStyle = new MutableLiveData<>();
     private final MutableLiveData<Boolean> opmlBusy = new MutableLiveData<>(false);
     private final MutableLiveData<String> opmlMessage = new MutableLiveData<>();
 
@@ -60,6 +61,7 @@ public class SettingsViewModel extends AndroidViewModel {
         startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
         contrastLevel.setValue(prefs.getString(PrefsKeys.CONTRAST_LEVEL, PrefsKeys.CONTRAST_STANDARD));
         dynamicColorsEnabled.setValue(prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false));
+        articleLayoutStyle.setValue(prefs.getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD));
     }
 
     public LiveData<Boolean> getWifiOnly() {
@@ -84,6 +86,10 @@ public class SettingsViewModel extends AndroidViewModel {
 
     public LiveData<Boolean> getDynamicColorsEnabled() {
         return dynamicColorsEnabled;
+    }
+
+    public LiveData<String> getArticleLayoutStyle() {
+        return articleLayoutStyle;
     }
 
     public LiveData<Boolean> getOpmlBusy() {
@@ -124,6 +130,11 @@ public class SettingsViewModel extends AndroidViewModel {
     public void setDynamicColorsEnabled(boolean enabled) {
         prefs.edit().putBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, enabled).apply();
         dynamicColorsEnabled.setValue(enabled);
+    }
+
+    public void setArticleLayoutStyle(String style) {
+        prefs.edit().putString(PrefsKeys.ARTICLE_LAYOUT_STYLE, style).apply();
+        articleLayoutStyle.setValue(style);
     }
 
     public void exportOpml(Uri targetUri) {
