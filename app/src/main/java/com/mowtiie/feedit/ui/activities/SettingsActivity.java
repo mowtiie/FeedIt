@@ -213,12 +213,11 @@ public class SettingsActivity extends FeedItActivity {
     private void showArticleLayoutDialog() {
         String[] values = {
                 PrefsKeys.LAYOUT_LIST, PrefsKeys.LAYOUT_COMPACT, PrefsKeys.LAYOUT_CARD,
-                PrefsKeys.LAYOUT_MAGAZINE, PrefsKeys.LAYOUT_DETAILED
+                PrefsKeys.LAYOUT_MAGAZINE
         };
         String[] labels = {
                 getString(R.string.option_layout_list), getString(R.string.option_layout_compact),
-                getString(R.string.option_layout_card), getString(R.string.option_layout_magazine),
-                getString(R.string.option_layout_detailed)
+                getString(R.string.option_layout_card), getString(R.string.option_layout_magazine)
         };
 
         String current = viewModel.getArticleLayoutStyle().getValue();
@@ -246,8 +245,6 @@ public class SettingsActivity extends FeedItActivity {
             return getString(R.string.option_layout_compact);
         } else if (PrefsKeys.LAYOUT_MAGAZINE.equals(style)) {
             return getString(R.string.option_layout_magazine);
-        } else if (PrefsKeys.LAYOUT_DETAILED.equals(style)) {
-            return getString(R.string.option_layout_detailed);
         } else {
             return getString(R.string.option_layout_card);
         }

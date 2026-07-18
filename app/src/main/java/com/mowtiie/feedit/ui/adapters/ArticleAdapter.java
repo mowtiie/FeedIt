@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-import androidx.core.text.HtmlCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,7 +20,6 @@ import com.google.android.material.textview.MaterialTextView;
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ItemArticleCardBinding;
 import com.mowtiie.feedit.databinding.ItemArticleCompactBinding;
-import com.mowtiie.feedit.databinding.ItemArticleDetailedBinding;
 import com.mowtiie.feedit.databinding.ItemArticleListBinding;
 import com.mowtiie.feedit.databinding.ItemArticleMagazineBinding;
 import com.mowtiie.feedit.model.Article;
@@ -42,7 +40,6 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
     private static final int VIEW_TYPE_COMPACT = 1;
     private static final int VIEW_TYPE_CARD = 2;
     private static final int VIEW_TYPE_MAGAZINE = 3;
-    private static final int VIEW_TYPE_DETAILED = 4;
 
     public interface Listener {
         void onArticleClicked(ArticleUiState item);
@@ -124,8 +121,6 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
             return VIEW_TYPE_COMPACT;
         } else if (PrefsKeys.LAYOUT_MAGAZINE.equals(layoutStyle)) {
             return VIEW_TYPE_MAGAZINE;
-        } else if (PrefsKeys.LAYOUT_DETAILED.equals(layoutStyle)) {
-            return VIEW_TYPE_DETAILED;
         } else {
             return VIEW_TYPE_CARD;
         }
@@ -141,8 +136,6 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
             return new CompactViewHolder(ItemArticleCompactBinding.inflate(inflater, parent, false));
         } else if (viewType == VIEW_TYPE_MAGAZINE) {
             return new MagazineViewHolder(ItemArticleMagazineBinding.inflate(inflater, parent, false));
-        } else if (viewType == VIEW_TYPE_DETAILED) {
-            return new DetailedViewHolder(ItemArticleDetailedBinding.inflate(inflater, parent, false));
         } else {
             return new CardViewHolder(ItemArticleCardBinding.inflate(inflater, parent, false));
         }
@@ -193,17 +186,9 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         }
     }
 
-    private static void bindSnippet(MaterialTextView snippetView, Article article) {
-        String html = article.getSummary() != null ? article.getSummary() : article.getContent();
-        if (html == null || html.isEmpty()) {
-            snippetView.setText("");
-            return;
-        }
-        String plain = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT).toString().trim();
-        snippetView.setText(plain);
-    }
-
-    private static void bindStarAndSelection(MaterialCardView card, ImageView starIndicator, MaterialCheckBox checkbox, ArticleUiState item, Listener listener, boolean selectionMode, boolean isSelected) {
+    private static void bindStarAndSelection(MaterialCardView card, ImageView starIndicator,
+                                             MaterialCheckBox checkbox, ArticleUiState item,
+                                             Listener listener, boolean selectionMode, boolean isSelected) {
         Article article = item.getArticle();
         if (selectionMode) {
             starIndicator.setVisibility(View.GONE);
@@ -296,24 +281,6 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
             bindThumbnail(binding.imageThumbnail, item.getArticle());
             bindStarAndSelection(binding.getRoot(), binding.imageStarIndicator, binding.checkboxSelect,
                     item, listener, selectionMode, isSelected);
-        }
-    }
-
-    static class DetailedViewHolder extends ArticleViewHolder {
-        private final ItemArticleDetailedBinding binding;
-
-        DetailedViewHolder(ItemArticleDetailedBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
-
-        @Override
-        void bind(ArticleUiState item, Listener listener, boolean selectionMode, boolean isSelected) {
-            bindTitleAndMeta(binding.textTitle, binding.textMeta, item);
-            applyReadAlpha(binding.getRoot(), item.getArticle());
-            bindThumbnail(binding.imageThumbnail, item.getArticle());
-            bindSnippet(binding.textSnippet, item.getArticle());
-            bindStarAndSelection(binding.getRoot(), binding.imageStarIndicator, binding.checkboxSelect, item, listener, selectionMode, isSelected);
         }
     }
 }
