@@ -1,5 +1,6 @@
 package com.mowtiie.feedit.ui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ActivitySettingsBinding;
 import com.mowtiie.feedit.ui.viewmodel.SettingsViewModel;
+import com.mowtiie.feedit.util.BatteryOptimizationHelper;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
 
@@ -121,9 +123,30 @@ public class SettingsActivity extends FeedItActivity {
 
         binding.rowArticleLayout.setOnClickListener(v -> showArticleLayoutDialog());
         binding.rowSyncFrequency.setOnClickListener(v -> showSyncFrequencyDialog());
+        binding.rowBatteryOptimization.setOnClickListener(v -> handleBatteryOptimizationClick());
 
         binding.buttonImportOpml.setOnClickListener(v -> openOpmlLauncher.launch(new String[]{"*/*"}));
         binding.buttonExportOpml.setOnClickListener(v -> createOpmlLauncher.launch("feedit-subscriptions.opml"));
+    }
+
+    private void handleBatteryOptimizationClick() {
+        Intent intent = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)
+                ? BatteryOptimizationHelper.buildAppSettingsIntent(this)
+                : BatteryOptimizationHelper.buildRequestExemptionIntent(this);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateBatteryOptimizationRow();
+    }
+
+    private void updateBatteryOptimizationRow() {
+        boolean unrestricted = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this);
+        binding.textBatteryOptimizationValue.setText(unrestricted
+                ? R.string.battery_optimization_unrestricted
+                : R.string.battery_optimization_restricted);
     }
 
     private void observeViewModel() {

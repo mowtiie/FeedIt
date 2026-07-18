@@ -129,6 +129,9 @@
     <string name="label_startup_page">Startup page</string>
     <string name="label_sync">Sync</string>
     <string name="label_sync_frequency_title">Sync frequency</string>
+    <string name="label_battery_optimization_title">Battery optimization</string>
+    <string name="battery_optimization_unrestricted">Unrestricted — background sync works reliably</string>
+    <string name="battery_optimization_restricted">Restricted — background sync may be delayed. Tap to fix.</string>
     <string name="dialog_sync_frequency_title">Sync frequency</string>
     <string name="option_sync_15min">Every 15 minutes</string>
     <string name="option_sync_30min">Every 30 minutes</string>
