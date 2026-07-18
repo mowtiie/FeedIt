@@ -25,6 +25,9 @@ public final class NotificationHelper {
     private static final String GROUP_KEY = "com.mowtiie.feedit.NEW_ARTICLES";
     private static final int SUMMARY_NOTIFICATION_ID = 0;
 
+    private static final String SYNC_STATUS_CHANNEL_ID = "sync_status";
+    private static final int SYNC_STATUS_NOTIFICATION_ID = -1;
+
     private NotificationHelper() {
     }
 
@@ -39,6 +42,18 @@ public final class NotificationHelper {
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
+        }
+    }
+
+    public static void ensureSyncStatusChannel(Context context) {
+        NotificationChannel channel = new NotificationChannel(
+                SYNC_STATUS_CHANNEL_ID,
+                context.getString(R.string.notification_channel_sync_status_name),
+                NotificationManager.IMPORTANCE_LOW);
+        channel.setDescription(context.getString(R.string.notification_channel_sync_status_description));
+        NotificationManager manager = context.getSystemService(NotificationManager.class);
+        if (manager != null) {
+            manager.createNotificationChannel(channel);
         }
     }
 
@@ -68,6 +83,50 @@ public final class NotificationHelper {
         manager.notify(SUMMARY_NOTIFICATION_ID, buildSummaryNotification(context, totalNew).build());
     }
 
+    public static void notifySyncStatus(Context context, int totalNewArticles, int failedFeedCount) {
+        boolean notificationsEnabled = context
+                .getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE)
+                .getBoolean(PrefsKeys.NOTIFICATIONS_ENABLED, true);
+        if (!notificationsEnabled) {
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        ensureSyncStatusChannel(context);
+
+        StringBuilder body = new StringBuilder();
+        if (totalNewArticles > 0) {
+            body.append(context.getResources().getQuantityString(
+                    R.plurals.new_articles_count, totalNewArticles, totalNewArticles));
+        } else {
+            body.append(context.getString(R.string.sync_status_no_new_articles));
+        }
+        if (failedFeedCount > 0) {
+            body.append(" · ").append(context.getResources().getQuantityString(
+                    R.plurals.sync_status_failed_count, failedFeedCount, failedFeedCount));
+        }
+
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, SYNC_STATUS_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_feedit)
+                .setContentTitle(context.getString(R.string.sync_status_title))
+                .setContentText(body.toString())
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_LOW);
+
+        NotificationManagerCompat.from(context).notify(SYNC_STATUS_NOTIFICATION_ID, builder.build());
+    }
+
     private static NotificationCompat.Builder buildFeedNotification(Context context, FeedSyncResult result) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.EXTRA_OPEN_FEED_ID, result.getFeedId());
@@ -81,8 +140,7 @@ public final class NotificationHelper {
                 R.plurals.new_articles_count, result.getNewArticleCount(), result.getNewArticleCount());
 
         return new NotificationCompat.Builder(context, CHANNEL_ID)
-                // TODO: swap for a proper monochrome notification icon asset before shipping —
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(R.drawable.ic_stat_feedit)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setGroup(GROUP_KEY)
@@ -94,7 +152,7 @@ public final class NotificationHelper {
     private static NotificationCompat.Builder buildSummaryNotification(Context context, int totalNew) {
         String body = context.getResources().getQuantityString(R.plurals.new_articles_count, totalNew, totalNew);
         return new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(R.drawable.ic_stat_feedit)
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentText(body)
                 .setStyle(new NotificationCompat.InboxStyle().setSummaryText(body))

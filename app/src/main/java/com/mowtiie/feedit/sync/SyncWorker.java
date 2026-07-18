@@ -29,6 +29,8 @@ import java.util.concurrent.Future;
 
 public class SyncWorker extends Worker {
 
+    public static final String KEY_IS_MANUAL = "is_manual";
+
     private static final int OUTCOME_NOT_MODIFIED = -2;
     private static final int OUTCOME_FETCH_FAILED = -1;
 
@@ -67,12 +69,12 @@ public class SyncWorker extends Worker {
         }
 
         int threadCount = Math.min(MAX_CONCURRENT_FEEDS, feeds.size());
-        SyncLog.d("=== sync run START — " + feeds.size() + " feeds, "
-                + threadCount + " at a time ===");
+        SyncLog.d("=== sync run START — " + feeds.size() + " feeds, " + threadCount + " at a time ===");
 
         ExecutorService pool = Executors.newFixedThreadPool(threadCount);
         List<FeedSyncResult> notifyResults = new ArrayList<>();
         int ok = 0, notModified = 0, failed = 0;
+        int totalNewArticles = 0;
 
         try {
             List<Callable<FeedOutcome>> tasks = new ArrayList<>();
@@ -100,6 +102,7 @@ public class SyncWorker extends Worker {
                     notModified++;
                 } else {
                     ok++;
+                    totalNewArticles += result.outcome;
                 }
                 if (result.notifyResult != null) {
                     notifyResults.add(result.notifyResult);
@@ -115,6 +118,11 @@ public class SyncWorker extends Worker {
 
         if (!notifyResults.isEmpty()) {
             NotificationHelper.notifyNewArticles(getApplicationContext(), notifyResults);
+        }
+
+        boolean isManual = getInputData().getBoolean(KEY_IS_MANUAL, false);
+        if (isManual) {
+            NotificationHelper.notifySyncStatus(getApplicationContext(), totalNewArticles, failed);
         }
 
         long totalElapsed = System.currentTimeMillis() - runStart;

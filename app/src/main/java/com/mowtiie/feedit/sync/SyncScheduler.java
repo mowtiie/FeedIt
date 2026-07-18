@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.work.Constraints;
+import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
@@ -29,8 +30,7 @@ public final class SyncScheduler {
     }
 
     public static void schedulePeriodicSync(Context context) {
-        long intervalMinutes = context.getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE)
-                .getLong(PrefsKeys.SYNC_INTERVAL_MINUTES, DEFAULT_INTERVAL_MINUTES);
+        long intervalMinutes = context.getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE).getLong(PrefsKeys.SYNC_INTERVAL_MINUTES, DEFAULT_INTERVAL_MINUTES);
         long clampedMinutes = Math.max(intervalMinutes, PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 60000L);
 
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
@@ -38,12 +38,16 @@ public final class SyncScheduler {
                 .setConstraints(buildConstraints(context))
                 .build();
 
-        WorkManager.getInstance(context)
-                .enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request);
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request);
     }
 
     public static void triggerManualSync(Context context) {
+        Data inputData = new Data.Builder()
+                .putBoolean(SyncWorker.KEY_IS_MANUAL, true)
+                .build();
+
         OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SyncWorker.class)
+                .setInputData(inputData)
                 .setConstraints(new Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build())

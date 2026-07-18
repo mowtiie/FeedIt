@@ -92,6 +92,16 @@
         <item quantity="other">%d new articles</item>
     </plurals>
 
+    <string name="notification_channel_sync_status_name">Sync status</string>
+    <string name="notification_channel_sync_status_description">A summary each time you manually refresh your feeds</string>
+    <string name="sync_status_title">Sync complete</string>
+    <string name="sync_status_no_new_articles">No new articles</string>
+
+    <plurals name="sync_status_failed_count">
+        <item quantity="one">%d feed couldn\'t be reached</item>
+        <item quantity="other">%d feeds couldn\'t be reached</item>
+    </plurals>
+
     <!-- Settings -->
     <string name="title_settings">Settings</string>
     <string name="title_about">About</string>
