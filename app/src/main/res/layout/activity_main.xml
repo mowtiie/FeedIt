@@ -21,6 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:title="@string/app_name"
+                app:titleTextColor="?attr/colorOnSurface"
                 app:navigationContentDescription="@string/content_desc_open_drawer" />
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -40,20 +41,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"
-                    android:paddingVertical="8dp"/>
+                    android:paddingVertical="8dp"
+                    tools:listitem="@layout/item_article" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/text_empty_state"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginHorizontal="32dp"
-                    android:gravity="center"
-                    android:text="@string/empty_state_no_articles"
-                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
+                <include
+                    android:id="@+id/empty_state"
+                    layout="@layout/view_empty_state" />
 
             </FrameLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
