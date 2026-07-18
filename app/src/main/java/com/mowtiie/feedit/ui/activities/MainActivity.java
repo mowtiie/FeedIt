@@ -124,6 +124,14 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE)
+                .getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD);
+        adapter.setLayoutStyle(layoutStyle);
+    }
+
     private void applyStartupPage() {
         String startupPage = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE)
                 .getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL);

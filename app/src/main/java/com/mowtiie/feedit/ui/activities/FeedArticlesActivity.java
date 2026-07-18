@@ -22,6 +22,7 @@ import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
+import com.mowtiie.feedit.util.PrefsKeys;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -101,6 +102,13 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         setupBackNavigation();
         setupRecyclerView();
         observeViewModel();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD);
+        adapter.setLayoutStyle(layoutStyle);
     }
 
     private void setupBackNavigation() {
