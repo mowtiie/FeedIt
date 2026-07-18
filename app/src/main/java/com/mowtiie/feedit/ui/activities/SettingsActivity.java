@@ -111,9 +111,16 @@ public class SettingsActivity extends FeedItActivity {
             }
         });
 
-        binding.switchDynamicColors.setOnCheckedChangeListener((button, checked) -> viewModel.setDynamicColorsEnabled(checked));
+        binding.switchDynamicColors.setOnCheckedChangeListener((button, checked) -> {
+            boolean actuallyChanged = checked != Boolean.TRUE.equals(viewModel.getDynamicColorsEnabled().getValue());
+            viewModel.setDynamicColorsEnabled(checked);
+            if (actuallyChanged) {
+                recreate();
+            }
+        });
 
         binding.rowArticleLayout.setOnClickListener(v -> showArticleLayoutDialog());
+        binding.rowSyncFrequency.setOnClickListener(v -> showSyncFrequencyDialog());
 
         binding.buttonImportOpml.setOnClickListener(v -> openOpmlLauncher.launch(new String[]{"*/*"}));
         binding.buttonExportOpml.setOnClickListener(v -> createOpmlLauncher.launch("feedit-subscriptions.opml"));
@@ -163,6 +170,9 @@ public class SettingsActivity extends FeedItActivity {
 
         viewModel.getArticleLayoutStyle().observe(this, style ->
                 binding.textArticleLayoutValue.setText(articleLayoutDisplayName(style)));
+
+        viewModel.getSyncIntervalMinutes().observe(this, minutes ->
+                binding.textSyncFrequencyValue.setText(syncFrequencyDisplayName(minutes)));
 
         viewModel.getOpmlBusy().observe(this, busy -> {
             binding.progressOpml.setVisibility(busy ? View.VISIBLE : View.GONE);
@@ -217,6 +227,56 @@ public class SettingsActivity extends FeedItActivity {
             return getString(R.string.option_layout_detailed);
         } else {
             return getString(R.string.option_layout_card);
+        }
+    }
+
+    private void showSyncFrequencyDialog() {
+        long[] values = {15L, 30L, 60L, 120L, 240L, 360L, 720L};
+        String[] labels = {
+                getString(R.string.option_sync_15min), getString(R.string.option_sync_30min),
+                getString(R.string.option_sync_1hour), getString(R.string.option_sync_2hours),
+                getString(R.string.option_sync_4hours), getString(R.string.option_sync_6hours),
+                getString(R.string.option_sync_12hours)
+        };
+
+        Long current = viewModel.getSyncIntervalMinutes().getValue();
+        int checkedIndex = 2;
+        if (current != null) {
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] == current) {
+                    checkedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_sync_frequency_title)
+                .setSingleChoiceItems(labels, checkedIndex, (dialog, which) -> {
+                    viewModel.setSyncIntervalMinutes(values[which]);
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    private String syncFrequencyDisplayName(Long minutes) {
+        if (minutes == null) {
+            return getString(R.string.option_sync_1hour);
+        }
+        if (minutes == 15L) {
+            return getString(R.string.option_sync_15min);
+        } else if (minutes == 30L) {
+            return getString(R.string.option_sync_30min);
+        } else if (minutes == 120L) {
+            return getString(R.string.option_sync_2hours);
+        } else if (minutes == 240L) {
+            return getString(R.string.option_sync_4hours);
+        } else if (minutes == 360L) {
+            return getString(R.string.option_sync_6hours);
+        } else if (minutes == 720L) {
+            return getString(R.string.option_sync_12hours);
+        } else {
+            return getString(R.string.option_sync_1hour);
         }
     }
 

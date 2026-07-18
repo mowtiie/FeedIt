@@ -43,6 +43,7 @@ public class SettingsViewModel extends AndroidViewModel {
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 
     private final MutableLiveData<Boolean> wifiOnly = new MutableLiveData<>();
+    private final MutableLiveData<Long> syncIntervalMinutes = new MutableLiveData<>();
     private final MutableLiveData<Boolean> notificationsEnabled = new MutableLiveData<>();
     private final MutableLiveData<String> darkMode = new MutableLiveData<>();
     private final MutableLiveData<String> startupPage = new MutableLiveData<>();
@@ -56,6 +57,7 @@ public class SettingsViewModel extends AndroidViewModel {
         super(application);
         prefs = application.getSharedPreferences(PrefsKeys.PREFS_NAME, Application.MODE_PRIVATE);
         wifiOnly.setValue(prefs.getBoolean(PrefsKeys.SYNC_WIFI_ONLY, false));
+        syncIntervalMinutes.setValue(prefs.getLong(PrefsKeys.SYNC_INTERVAL_MINUTES, 60L));
         notificationsEnabled.setValue(prefs.getBoolean(PrefsKeys.NOTIFICATIONS_ENABLED, true));
         darkMode.setValue(prefs.getString(PrefsKeys.DARK_MODE, "system"));
         startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
@@ -66,6 +68,10 @@ public class SettingsViewModel extends AndroidViewModel {
 
     public LiveData<Boolean> getWifiOnly() {
         return wifiOnly;
+    }
+
+    public LiveData<Long> getSyncIntervalMinutes() {
+        return syncIntervalMinutes;
     }
 
     public LiveData<Boolean> getNotificationsEnabled() {
@@ -103,6 +109,12 @@ public class SettingsViewModel extends AndroidViewModel {
     public void setWifiOnly(boolean value) {
         prefs.edit().putBoolean(PrefsKeys.SYNC_WIFI_ONLY, value).apply();
         wifiOnly.setValue(value);
+        SyncScheduler.schedulePeriodicSync(getApplication());
+    }
+
+    public void setSyncIntervalMinutes(long minutes) {
+        prefs.edit().putLong(PrefsKeys.SYNC_INTERVAL_MINUTES, minutes).apply();
+        syncIntervalMinutes.setValue(minutes);
         SyncScheduler.schedulePeriodicSync(getApplication());
     }
 
