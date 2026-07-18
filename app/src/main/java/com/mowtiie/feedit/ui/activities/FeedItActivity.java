@@ -12,5 +12,6 @@ public abstract class FeedItActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.applyPersistedContrast(this);
         super.onCreate(savedInstanceState);
+        ThemeManager.applyDynamicColorsToActivityIfEnabled(this);
     }
 }
