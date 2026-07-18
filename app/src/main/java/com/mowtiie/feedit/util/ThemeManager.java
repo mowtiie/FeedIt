@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.google.android.material.color.DynamicColors;
+import com.google.android.material.color.DynamicColorsOptions;
 import com.mowtiie.feedit.R;
 
 public final class ThemeManager {
@@ -32,11 +33,21 @@ public final class ThemeManager {
         AppCompatDelegate.setDefaultNightMode(nightMode);
     }
 
-    public static void applyDynamicColorsIfEnabled(Application application) {
-        SharedPreferences prefs = application.getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE);
-        boolean enabled = prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false);
-        if (enabled) {
-            DynamicColors.applyToActivitiesIfAvailable(application);
+    public static void setupDynamicColors(Application application) {
+        DynamicColorsOptions options = new DynamicColorsOptions.Builder()
+                .setPrecondition((activity, theme) -> {
+                    SharedPreferences prefs =
+                            activity.getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE);
+                    return prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false);
+                })
+                .build();
+        DynamicColors.applyToActivitiesIfAvailable(application, options);
+    }
+
+    public static void applyDynamicColorsToActivityIfEnabled(Activity activity) {
+        SharedPreferences prefs = activity.getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE);
+        if (prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false)) {
+            DynamicColors.applyToActivityIfAvailable(activity);
         }
     }
 
