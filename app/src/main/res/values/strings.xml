@@ -100,6 +100,15 @@
     <string name="label_appearance">Appearance</string>
     <string name="label_startup_page">Startup page</string>
     <string name="label_sync">Sync</string>
+    <string name="label_sync_frequency_title">Sync frequency</string>
+    <string name="dialog_sync_frequency_title">Sync frequency</string>
+    <string name="option_sync_15min">Every 15 minutes</string>
+    <string name="option_sync_30min">Every 30 minutes</string>
+    <string name="option_sync_1hour">Every hour</string>
+    <string name="option_sync_2hours">Every 2 hours</string>
+    <string name="option_sync_4hours">Every 4 hours</string>
+    <string name="option_sync_6hours">Every 6 hours</string>
+    <string name="option_sync_12hours">Every 12 hours</string>
     <string name="label_notifications">Notifications</string>
     <string name="label_contrast">Contrast</string>
     <string name="option_contrast_standard">Standard</string>

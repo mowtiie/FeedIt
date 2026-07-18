@@ -11,6 +11,8 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.mowtiie.feedit.util.PrefsKeys;
+
 import java.util.concurrent.TimeUnit;
 
 public final class SyncScheduler {
@@ -21,14 +23,18 @@ public final class SyncScheduler {
     private static final String PREFS_NAME = "feedit_prefs";
     private static final String KEY_SYNC_WIFI_ONLY = "sync_wifi_only";
 
-    private static final long PERIODIC_INTERVAL_HOURS = 1;
+    private static final long DEFAULT_INTERVAL_MINUTES = 60;
 
     private SyncScheduler() {
     }
 
     public static void schedulePeriodicSync(Context context) {
+        long intervalMinutes = context.getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE)
+                .getLong(PrefsKeys.SYNC_INTERVAL_MINUTES, DEFAULT_INTERVAL_MINUTES);
+        long clampedMinutes = Math.max(intervalMinutes, PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 60000L);
+
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-                SyncWorker.class, PERIODIC_INTERVAL_HOURS, TimeUnit.HOURS)
+                SyncWorker.class, clampedMinutes, TimeUnit.MINUTES)
                 .setConstraints(buildConstraints(context))
                 .build();
 
