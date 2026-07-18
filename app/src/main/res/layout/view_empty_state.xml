@@ -14,17 +14,19 @@
         android:id="@+id/text_empty_kaomoji"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceHeadlineSmall"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textAppearance="?attr/textAppearanceDisplayMedium"
+        android:textColor="?attr/colorOnSurface"
         tools:text="ᕕ( ᐛ )ᕗ" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/text_empty_caption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:gravity="center"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:fontFamily="serif"
+        android:textAlignment="center"
+        android:textAppearance="?attr/textAppearanceTitleSmall"
         android:textColor="?attr/colorOnSurfaceVariant"
         tools:text="No articles yet. Add a feed to get started." />
 
