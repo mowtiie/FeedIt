@@ -26,6 +26,7 @@ import androidx.work.WorkManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowtiie.feedit.R;
+import com.mowtiie.feedit.crash.CrashReporter;
 import com.mowtiie.feedit.data.ArticleDao;
 import com.mowtiie.feedit.databinding.ActivityMainBinding;
 import com.mowtiie.feedit.model.Feed;
@@ -96,6 +97,22 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
                 // No-op either way — if denied, sync still runs, notifications just won't show.
             });
 
+    private boolean crashDialogShown;
+
+    private final ActivityResultLauncher<Intent> saveCrashLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() != RESULT_OK || result.getData() == null) return;
+                Uri uri = result.getData().getData();
+                if (uri == null) return;
+
+                if (CrashReporter.writeReportToUri(this, uri)) {
+                    Toast.makeText(this, R.string.toast_crash_save_success, Toast.LENGTH_SHORT).show();
+                    CrashReporter.deleteReport(this);
+                } else {
+                    Toast.makeText(this, R.string.toast_crash_save_failure, Toast.LENGTH_SHORT).show();
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,6 +138,11 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             viewModel.selectFeed(openFeedId);
         } else {
             applyStartupPage();
+        }
+
+        if (!crashDialogShown) {
+            crashDialogShown = true;
+            CrashReporter.showDialogIfPending(this, saveCrashLauncher);
         }
     }
 
