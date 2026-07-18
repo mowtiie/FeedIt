@@ -203,6 +203,10 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             startActivity(new Intent(this, SettingsActivity.class));
             binding.drawerLayout.closeDrawer(GravityCompat.START);
             return true;
+        } else if (id == R.id.nav_about) {
+            startActivity(new Intent(this, AboutActivity.class));
+            binding.drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         }
 
         if (id == R.id.nav_all) {
