@@ -107,6 +107,16 @@
     <string name="option_contrast_high">High</string>
     <string name="label_dynamic_colors_title">Dynamic colors</string>
     <string name="label_dynamic_colors_subtitle">Use colors based on your wallpaper (Android 12+)</string>
+
+    <!-- Article layout style picker -->
+    <string name="label_article_display">Article display</string>
+    <string name="label_article_layout_title">Article layout</string>
+    <string name="dialog_article_layout_title">Article layout</string>
+    <string name="option_layout_list">List</string>
+    <string name="option_layout_compact">Compact</string>
+    <string name="option_layout_card">Card</string>
+    <string name="option_layout_magazine">Magazine</string>
+    <string name="option_layout_detailed">Detailed</string>
     <string name="option_dark_system">System</string>
     <string name="option_dark_light">Light</string>
     <string name="option_dark_dark">Dark</string>
