@@ -32,15 +32,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!--
-            Each settings section is its own filled card (colorSurfaceContainerLowest
-            background) rather than a flat list separated by dividers — the card
-            boundary itself now provides the visual separation, so the old dividers
-            between sections are gone; only content within a card still uses light
-            internal spacing, not dividers.
-            -->
-
-            <!-- Sync -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
@@ -58,14 +49,17 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_sync"
-                        android:textAppearance="?attr/textAppearanceLabelLarge" />
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="?attr/colorPrimary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="4dp"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:minHeight="48dp"
+                        android:orientation="horizontal"
+                        android:paddingVertical="12dp">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -99,12 +93,13 @@
                         android:id="@+id/row_sync_frequency"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:minHeight="48dp"
+                        android:orientation="horizontal"
+                        android:paddingVertical="12dp">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -128,11 +123,17 @@
 
                         </LinearLayout>
 
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="8dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_chevron_forward" />
+
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Notifications -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
@@ -150,14 +151,17 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_notifications"
-                        android:textAppearance="?attr/textAppearanceLabelLarge" />
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="?attr/colorPrimary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="4dp"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:minHeight="48dp"
+                        android:orientation="horizontal"
+                        android:paddingVertical="12dp">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -189,7 +193,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Startup page -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
@@ -207,7 +210,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_startup_page"
-                        android:textAppearance="?attr/textAppearanceLabelLarge" />
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="?attr/colorPrimary" />
 
                     <com.google.android.material.button.MaterialButtonToggleGroup
                         android:id="@+id/toggle_startup_page"
@@ -245,9 +249,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Article display: a single tappable row opening a radio-list dialog,
-                 rather than an inline toggle group — 5 options is too many to fit
-                 comfortably in one MaterialButtonToggleGroup row. -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
@@ -265,18 +266,21 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_article_display"
-                        android:textAppearance="?attr/textAppearanceLabelLarge" />
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="?attr/colorPrimary" />
 
                     <LinearLayout
                         android:id="@+id/row_article_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="4dp"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:minHeight="48dp"
+                        android:orientation="horizontal"
+                        android:paddingVertical="12dp">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -300,11 +304,17 @@
 
                         </LinearLayout>
 
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="8dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_chevron_forward" />
+
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Appearance: dark mode, contrast, dynamic colors all grouped in one card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
@@ -322,7 +332,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_appearance"
-                        android:textAppearance="?attr/textAppearanceLabelLarge" />
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="?attr/colorPrimary" />
 
                     <com.google.android.material.button.MaterialButtonToggleGroup
                         android:id="@+id/toggle_dark_mode"
@@ -402,9 +413,11 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="12dp"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:minHeight="48dp"
+                        android:orientation="horizontal"
+                        android:paddingVertical="12dp">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -436,7 +449,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Backup -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
@@ -453,7 +465,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_feeds_backup"
-                        android:textAppearance="?attr/textAppearanceLabelLarge" />
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="?attr/colorPrimary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
