@@ -52,10 +52,8 @@ public class FeedFetcher {
             return FetchResult.success(status, body, etag, lastModified);
 
         } catch (IOException e) {
-            SyncLog.w("      fetch threw " + e.getClass().getSimpleName() + ": " + e.getMessage()
-                    + " for " + url);
-            return FetchResult.error(e.getClass().getSimpleName()
-                    + (e.getMessage() != null ? ": " + e.getMessage() : ""));
+            SyncLog.w("      fetch threw " + e.getClass().getSimpleName() + ": " + e.getMessage() + " for " + url);
+            return FetchResult.error(e.getClass().getSimpleName() + (e.getMessage() != null ? ": " + e.getMessage() : ""));
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -66,20 +64,20 @@ public class FeedFetcher {
     private byte[] readBody(HttpURLConnection connection) throws IOException {
         String encoding = connection.getContentEncoding();
         InputStream raw = connection.getInputStream();
-        InputStream in = "gzip".equalsIgnoreCase(encoding) ? new GZIPInputStream(raw) : raw;
 
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        byte[] chunk = new byte[8192];
-        int read;
-        int total = 0;
-        while ((read = in.read(chunk)) != -1) {
-            total += read;
-            if (total > MAX_BODY_BYTES) {
-                throw new IOException("Feed body exceeded " + MAX_BODY_BYTES + " bytes, aborting");
+        try (InputStream in = "gzip".equalsIgnoreCase(encoding) ? new GZIPInputStream(raw) : raw) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] chunk = new byte[8192];
+            int read;
+            int total = 0;
+            while ((read = in.read(chunk)) != -1) {
+                total += read;
+                if (total > MAX_BODY_BYTES) {
+                    throw new IOException("Feed body exceeded " + MAX_BODY_BYTES + " bytes, aborting");
+                }
+                buffer.write(chunk, 0, read);
             }
-            buffer.write(chunk, 0, read);
+            return buffer.toByteArray();
         }
-        in.close();
-        return buffer.toByteArray();
     }
 }

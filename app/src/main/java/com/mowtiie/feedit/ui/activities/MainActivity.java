@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -99,6 +101,12 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
 
     private boolean crashDialogShown;
 
+    private boolean manualSyncWasRunning;
+
+    private static final long SEARCH_DEBOUNCE_MS = 250L;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSearch;
+
     private final ActivityResultLauncher<Intent> saveCrashLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() != RESULT_OK || result.getData() == null) return;
@@ -177,9 +185,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     }
 
     private void maybeRequestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
     }
@@ -255,6 +261,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     private void setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener(() -> {
             SyncLog.d("manual refresh triggered by pull-to-refresh");
+            manualSyncWasRunning = true;
             SyncScheduler.triggerManualSync(this);
         });
 
@@ -267,7 +274,6 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
 
                     boolean anyRunning = false;
                     for (androidx.work.WorkInfo info : workInfos) {
-                        SyncLog.d("manual-sync WorkInfo state = " + info.getState());
                         androidx.work.WorkInfo.State state = info.getState();
                         if (state == androidx.work.WorkInfo.State.ENQUEUED
                                 || state == androidx.work.WorkInfo.State.RUNNING
@@ -276,8 +282,14 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
                         }
                     }
 
-                    if (!anyRunning) {
-                        SyncLog.d("manual-sync: no runs in progress -> stopping spinner, refreshing list");
+                    if (anyRunning) {
+                        manualSyncWasRunning = true;
+                        return;
+                    }
+
+                    if (manualSyncWasRunning) {
+                        manualSyncWasRunning = false;
+                        SyncLog.d("manual-sync finished -> stopping spinner, refreshing list");
                         binding.swipeRefresh.setRefreshing(false);
                         viewModel.refresh();
                     }
@@ -322,17 +334,37 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                cancelPendingSearch();
                 viewModel.setSearchQuery(query);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                viewModel.setSearchQuery(newText);
+                scheduleSearch(newText);
                 return true;
             }
         });
         return true;
+    }
+
+    private void scheduleSearch(String query) {
+        cancelPendingSearch();
+        pendingSearch = () -> viewModel.setSearchQuery(query);
+        searchHandler.postDelayed(pendingSearch, SEARCH_DEBOUNCE_MS);
+    }
+
+    private void cancelPendingSearch() {
+        if (pendingSearch != null) {
+            searchHandler.removeCallbacks(pendingSearch);
+            pendingSearch = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        cancelPendingSearch();
+        super.onDestroy();
     }
 
     @Override

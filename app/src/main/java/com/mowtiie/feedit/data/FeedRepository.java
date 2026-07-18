@@ -24,7 +24,7 @@ public class FeedRepository {
     private final FeedDao feedDao;
     private final TagDao tagDao;
     private final ArticleDao articleDao;
-    private final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private final MutableLiveData<List<Article>> articles = new MutableLiveData<>();
@@ -72,18 +72,6 @@ public class FeedRepository {
 
     public void getArticleById(long articleId, RepositoryCallback<Article> callback) {
         executor.execute(() -> runCallback(() -> articleDao.getArticleById(articleId), callback));
-    }
-
-    public void insertArticles(List<Article> newArticles, RepositoryCallback<Integer> callback) {
-        executor.execute(() -> runCallback(() -> {
-            int insertedCount = 0;
-            for (Article article : newArticles) {
-                if (articleDao.insertOrIgnore(article) != -1) {
-                    insertedCount++;
-                }
-            }
-            return insertedCount;
-        }, callback));
     }
 
     public LiveData<List<FeedTags>> getFeedsWithTags() {
@@ -168,5 +156,9 @@ public class FeedRepository {
                 mainHandler.post(() -> callback.onError(e));
             }
         }
+    }
+
+    public void insertArticles(List<Article> newArticles, RepositoryCallback<Integer> callback) {
+        executor.execute(() -> runCallback(() -> articleDao.insertAllOrIgnore(newArticles), callback));
     }
 }

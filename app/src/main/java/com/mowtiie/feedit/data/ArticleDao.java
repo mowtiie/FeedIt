@@ -22,6 +22,27 @@ public class ArticleDao {
         this.dbHelper = dbHelper;
     }
 
+    public int insertAllOrIgnore(List<Article> articles) {
+        if (articles == null || articles.isEmpty()) {
+            return 0;
+        }
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int insertedCount = 0;
+        db.beginTransaction();
+        try {
+            for (Article article : articles) {
+                if (db.insertWithOnConflict("articles", null,
+                        toContentValues(article), SQLiteDatabase.CONFLICT_IGNORE) != -1) {
+                    insertedCount++;
+                }
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        return insertedCount;
+    }
+
     public long insertOrIgnore(Article article) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = toContentValues(article);

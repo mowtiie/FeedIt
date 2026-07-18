@@ -31,6 +31,8 @@ import com.mowtiie.feedit.util.PrefsKeys;
 import java.text.DateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -84,10 +86,34 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         }
     }
 
-    public void updateSelection(Set<Long> selectedIds, boolean selectionMode) {
-        this.selectedIds = selectedIds;
-        this.selectionMode = selectionMode;
-        notifyDataSetChanged();
+    public void updateSelection(Set<Long> newSelectedIds, boolean newSelectionMode) {
+        Set<Long> previousSelectedIds = this.selectedIds;
+        boolean modeChanged = newSelectionMode != this.selectionMode;
+
+        this.selectedIds = new HashSet<>(newSelectedIds);
+        this.selectionMode = newSelectionMode;
+
+        if (modeChanged) {
+            notifyDataSetChanged();
+            return;
+        }
+
+        Set<Long> changedIds = new HashSet<>(previousSelectedIds);
+        changedIds.addAll(newSelectedIds);
+        Set<Long> stillInBoth = new HashSet<>(previousSelectedIds);
+        stillInBoth.retainAll(newSelectedIds);
+        changedIds.removeAll(stillInBoth);
+
+        if (changedIds.isEmpty()) {
+            return;
+        }
+
+        List<ArticleUiState> current = getCurrentList();
+        for (int i = 0; i < current.size(); i++) {
+            if (changedIds.contains(current.get(i).getArticle().getId())) {
+                notifyItemChanged(i);
+            }
+        }
     }
 
     @Override
@@ -177,21 +203,17 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         snippetView.setText(plain);
     }
 
-    private static void bindStarAndSelection(MaterialCardView card, ImageView starIndicator,
-                                             MaterialCheckBox checkbox, ArticleUiState item,
-                                             Listener listener, boolean selectionMode, boolean isSelected) {
+    private static void bindStarAndSelection(MaterialCardView card, ImageView starIndicator, MaterialCheckBox checkbox, ArticleUiState item, Listener listener, boolean selectionMode, boolean isSelected) {
         Article article = item.getArticle();
         if (selectionMode) {
             starIndicator.setVisibility(View.GONE);
             checkbox.setVisibility(View.VISIBLE);
             checkbox.setChecked(isSelected);
-            card.setCardBackgroundColor(resolveThemeColor(card.getContext(),
-                    com.google.android.material.R.attr.colorPrimaryContainer));
+            card.setCardBackgroundColor(resolveThemeColor(card.getContext(), R.color.md_theme_primaryContainer));
         } else {
             starIndicator.setVisibility(article.isStarred() ? View.VISIBLE : View.GONE);
             checkbox.setVisibility(View.GONE);
-            card.setCardBackgroundColor(
-                    resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
+            card.setCardBackgroundColor(resolveThemeColor(card.getContext(), R.color.md_theme_surface));
         }
         card.setOnClickListener(v -> listener.onArticleClicked(item));
         card.setOnLongClickListener(v -> {
@@ -291,8 +313,7 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
             applyReadAlpha(binding.getRoot(), item.getArticle());
             bindThumbnail(binding.imageThumbnail, item.getArticle());
             bindSnippet(binding.textSnippet, item.getArticle());
-            bindStarAndSelection(binding.getRoot(), binding.imageStarIndicator, binding.checkboxSelect,
-                    item, listener, selectionMode, isSelected);
+            bindStarAndSelection(binding.getRoot(), binding.imageStarIndicator, binding.checkboxSelect, item, listener, selectionMode, isSelected);
         }
     }
 }
