@@ -271,19 +271,26 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
 
     private void updateEmptyState(List<ArticleUiState> items) {
         if (!items.isEmpty()) {
-            binding.textEmptyState.setVisibility(View.GONE);
+            binding.emptyState.getRoot().setVisibility(View.GONE);
             return;
         }
-        binding.textEmptyState.setVisibility(View.VISIBLE);
+        binding.emptyState.getRoot().setVisibility(View.VISIBLE);
 
         String query = viewModel.getSearchQuery();
+        int kaomojiRes;
+        int captionRes;
         if (query != null && !query.trim().isEmpty()) {
-            binding.textEmptyState.setText(R.string.empty_state_no_results);
+            kaomojiRes = R.string.empty_state_no_results_kaomoji;
+            captionRes = R.string.empty_state_no_results;
         } else if (viewModel.isUnreadOnly()) {
-            binding.textEmptyState.setText(R.string.empty_state_all_caught_up);
+            kaomojiRes = R.string.empty_state_all_caught_up_kaomoji;
+            captionRes = R.string.empty_state_all_caught_up;
         } else {
-            binding.textEmptyState.setText(R.string.empty_state_no_articles);
+            kaomojiRes = R.string.empty_state_no_articles_kaomoji;
+            captionRes = R.string.empty_state_no_articles;
         }
+        binding.emptyState.textEmptyKaomoji.setText(kaomojiRes);
+        binding.emptyState.textEmptyCaption.setText(captionRes);
     }
 
     @Override

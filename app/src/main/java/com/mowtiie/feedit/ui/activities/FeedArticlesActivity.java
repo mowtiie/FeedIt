@@ -99,6 +99,9 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         long feedId = getIntent().getLongExtra(EXTRA_FEED_ID, -1L);
         viewModel.selectFeed(feedId);
 
+        binding.emptyState.textEmptyKaomoji.setText(R.string.empty_state_no_articles_for_feed_kaomoji);
+        binding.emptyState.textEmptyCaption.setText(R.string.empty_state_no_articles_for_feed);
+
         setupBackNavigation();
         setupRecyclerView();
         observeViewModel();
@@ -134,7 +137,7 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     private void observeViewModel() {
         viewModel.getArticleUiStates().observe(this, items -> {
             adapter.submitList(items);
-            binding.textEmptyState.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+            binding.emptyState.getRoot().setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
         });
     }
 

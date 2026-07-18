@@ -41,13 +41,16 @@ public class FeedManagementActivity extends FeedItActivity implements FeedAdapte
 
         viewModel = new ViewModelProvider(this).get(FeedListViewModel.class);
 
+        binding.emptyState.textEmptyKaomoji.setText(R.string.empty_state_no_feeds_kaomoji);
+        binding.emptyState.textEmptyCaption.setText(R.string.empty_state_no_feeds);
+
         adapter = new FeedAdapter(this);
         binding.recyclerFeeds.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerFeeds.setAdapter(adapter);
 
         viewModel.getFeeds().observe(this, feeds -> {
             adapter.submitList(feeds);
-            binding.textEmptyState.setVisibility(feeds.isEmpty() ? View.VISIBLE : View.GONE);
+            binding.emptyState.getRoot().setVisibility(feeds.isEmpty() ? View.VISIBLE : View.GONE);
         });
     }
 

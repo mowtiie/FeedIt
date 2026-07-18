@@ -43,13 +43,16 @@ public class TagManagementActivity extends FeedItActivity implements TagAdapter.
 
         viewModel = new ViewModelProvider(this).get(TagListViewModel.class);
 
+        binding.emptyState.textEmptyKaomoji.setText(R.string.empty_state_no_tags_kaomoji);
+        binding.emptyState.textEmptyCaption.setText(R.string.empty_state_no_tags);
+
         adapter = new TagAdapter(this);
         binding.recyclerTags.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerTags.setAdapter(adapter);
 
         viewModel.getTags().observe(this, tags -> {
             adapter.submitList(tags);
-            binding.textEmptyState.setVisibility(tags.isEmpty() ? View.VISIBLE : View.GONE);
+            binding.emptyState.getRoot().setVisibility(tags.isEmpty() ? View.VISIBLE : View.GONE);
         });
     }
 
