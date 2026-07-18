@@ -86,6 +86,10 @@
 
                     </LinearLayout>
 
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
                     <LinearLayout
                         android:id="@+id/row_source_code"
                         android:layout_width="match_parent"
@@ -127,6 +131,10 @@
                             android:src="@drawable/ic_chevron_forward" />
 
                     </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
                     <LinearLayout
                         android:id="@+id/row_support"
@@ -170,6 +178,10 @@
 
                     </LinearLayout>
 
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
                     <LinearLayout
                         android:id="@+id/row_author"
                         android:layout_width="match_parent"
@@ -211,6 +223,10 @@
                             android:src="@drawable/ic_chevron_forward" />
 
                     </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
                     <LinearLayout
                         android:id="@+id/row_version"
