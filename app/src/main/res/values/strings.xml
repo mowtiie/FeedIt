@@ -162,4 +162,15 @@
     <string name="empty_state_all_caught_up">You\'re all caught up!</string>
     <string name="empty_state_no_articles_for_feed_kaomoji">(´・ω・`)</string>
     <string name="empty_state_no_articles_for_feed">No articles yet for this feed.</string>
+
+    <!-- Crash reporting -->
+    <string name="dialog_title_crash">FeedIt ran into a problem</string>
+    <string name="dialog_message_crash">The app closed unexpectedly last time. A technical report was saved on this device — nothing from your feeds or reading history is included. You can copy or export it to share with the developer, or dismiss it.</string>
+    <string name="crash_action_copy">Copy to clipboard</string>
+    <string name="crash_action_export">Export to file</string>
+    <string name="crash_action_dismiss">Dismiss</string>
+    <string name="crash_clip_label">FeedIt crash report</string>
+    <string name="toast_crash_copy_success">Crash report copied to clipboard</string>
+    <string name="toast_crash_save_success">Crash report saved</string>
+    <string name="toast_crash_save_failure">Couldn\'t save the crash report</string>
 </resources>

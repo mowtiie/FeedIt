@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="8dp">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/crash_action_copy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/crash_action_copy" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/crash_action_export"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/crash_action_export" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/crash_action_dismiss"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/crash_action_dismiss" />
+
+</LinearLayout>
