@@ -102,15 +102,10 @@
     <string name="preference_support_summary">If you enjoy using FeedIt, you can support its development</string>
     <string name="preference_app_author">Author</string>
 
-    <!-- TODO: replace these five placeholders with your actual values -->
-    <string name="app_license">MIT License</string>
-    <string name="app_author">Your Name</string>
-    <string name="url_source_code">https://github.com/yourusername/feedit</string>
-    <string name="url_support">https://github.com/sponsors/yourusername</string>
-    <string name="url_author">https://github.com/yourusername</string>
+    <string name="app_license">GNU General Public License V3.0</string>
+    <string name="app_author">mowtiie</string>
     <string name="button_close">Close</string>
-    <!-- TODO: customize this however you'd like — it only shows after 7 taps on Version -->
-    <string name="app_easter_egg">🎉 You found the secret! Thanks for using FeedIt.</string>
+    <string name="app_easter_egg">Well, it has to be here.</string>
 
     <string name="label_settings_about_title">About</string>
     <string name="label_settings_about_subtitle">Version, license, and links</string>

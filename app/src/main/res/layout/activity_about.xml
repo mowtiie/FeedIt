@@ -258,7 +258,7 @@
                                 android:layout_height="wrap_content"
                                 android:textAppearance="?attr/textAppearanceBodySmall"
                                 android:textColor="?attr/colorOnSurfaceVariant"
-                                tools:text="1.0.0" />
+                                tools:text="1.0" />
 
                         </LinearLayout>
                     </LinearLayout>
