@@ -43,6 +43,7 @@
     <string name="content_desc_hero_image">Article hero image</string>
 
     <string name="action_star">Star</string>
+    <string name="action_unstar">Unstar</string>
     <string name="action_mark_read">Mark read</string>
     <string name="action_mark_unread">Mark unread</string>
     <string name="action_share">Share</string>

@@ -38,6 +38,8 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
 
     public interface Listener {
         void onArticleClicked(ArticleUiState item);
+
+        void onArticleLongClicked(ArticleUiState item);
     }
 
     private static final DiffUtil.ItemCallback<ArticleUiState> DIFF_CALLBACK =
@@ -145,11 +147,16 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         }
     }
 
-    private static void bindStarAndClick(MaterialCardView card, ImageView starIndicator, ArticleUiState item, Listener listener) {
+    private static void bindStarAndClick(MaterialCardView card, ImageView starIndicator,
+                                         ArticleUiState item, Listener listener) {
         Article article = item.getArticle();
         starIndicator.setVisibility(article.isStarred() ? View.VISIBLE : View.GONE);
         card.setCardBackgroundColor(resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
         card.setOnClickListener(v -> listener.onArticleClicked(item));
+        card.setOnLongClickListener(v -> {
+            listener.onArticleLongClicked(item);
+            return true;
+        });
     }
 
     private static int resolveThemeColor(Context context, int attrResId) {

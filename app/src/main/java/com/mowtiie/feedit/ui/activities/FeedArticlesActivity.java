@@ -18,6 +18,7 @@ import com.mowtiie.feedit.databinding.ActivityFeedArticlesBinding;
 import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
+import com.mowtiie.feedit.util.ArticleActionsBottomSheet;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
@@ -64,7 +65,8 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     @Override
     protected void onResume() {
         super.onResume();
-        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD);
+        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE)
+                .getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD);
         adapter.setLayoutStyle(layoutStyle);
     }
 
@@ -111,6 +113,11 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
             intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_ID, item.getArticle().getId());
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onArticleLongClicked(ArticleUiState item) {
+        ArticleActionsBottomSheet.show(this, item.getArticle(), viewModel);
     }
 
     private void openInBrowser(String url) {

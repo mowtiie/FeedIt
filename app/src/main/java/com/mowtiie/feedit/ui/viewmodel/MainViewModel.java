@@ -210,11 +210,24 @@ public class MainViewModel extends AndroidViewModel {
         }
         List<ArticleUiState> result = new ArrayList<>();
         for (Article article : latestArticles) {
+            if (!matchesCurrentFilter(article)) {
+                continue;
+            }
             FeedTags ft = feedById.get(article.getFeedId());
             String feedTitle = (ft != null && ft.getFeed().getTitle() != null) ? ft.getFeed().getTitle() : "";
             int openMode = ft != null ? ft.getFeed().getOpenMode() : 0;
             result.add(new ArticleUiState(article, feedTitle, openMode));
         }
         return result;
+    }
+
+    private boolean matchesCurrentFilter(Article article) {
+        if (showRead != showUnread && article.isRead() != showRead) {
+            return false;
+        }
+        if (starredOnly && !article.isStarred()) {
+            return false;
+        }
+        return true;
     }
 }

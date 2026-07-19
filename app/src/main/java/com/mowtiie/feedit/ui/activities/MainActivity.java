@@ -35,6 +35,7 @@ import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.sync.SyncLog;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
+import com.mowtiie.feedit.util.ArticleActionsBottomSheet;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
@@ -406,6 +407,11 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_ID, item.getArticle().getId());
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onArticleLongClicked(ArticleUiState item) {
+        ArticleActionsBottomSheet.show(this, item.getArticle(), viewModel);
     }
 
     private void openInBrowser(String url) {
