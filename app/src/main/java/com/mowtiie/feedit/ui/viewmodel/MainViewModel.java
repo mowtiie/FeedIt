@@ -35,7 +35,8 @@ public class MainViewModel extends AndroidViewModel {
 
     private Long scopeFeedId = null;
     private Long scopeTagId = null;
-    private boolean unreadOnly = false;
+    private boolean showRead = true;
+    private boolean showUnread = true;
     private boolean starredOnly = false;
     private String searchQuery = null;
     private ArticleDao.SortOrder sortOrder;
@@ -79,15 +80,6 @@ public class MainViewModel extends AndroidViewModel {
     public void selectAll() {
         scopeFeedId = null;
         scopeTagId = null;
-        unreadOnly = false;
-        starredOnly = false;
-        refresh();
-    }
-
-    public void selectUnread() {
-        scopeFeedId = null;
-        scopeTagId = null;
-        unreadOnly = true;
         starredOnly = false;
         refresh();
     }
@@ -96,7 +88,6 @@ public class MainViewModel extends AndroidViewModel {
         scopeFeedId = null;
         scopeTagId = null;
         starredOnly = true;
-        unreadOnly = false;
         refresh();
     }
 
@@ -112,9 +103,9 @@ public class MainViewModel extends AndroidViewModel {
         refresh();
     }
 
-    public void applyReadStateFilter(boolean unreadOnly, boolean starredOnly) {
-        this.unreadOnly = unreadOnly;
-        this.starredOnly = starredOnly;
+    public void setReadStateFilter(boolean showRead, boolean showUnread) {
+        this.showRead = showRead;
+        this.showUnread = showUnread;
         refresh();
     }
 
@@ -137,8 +128,12 @@ public class MainViewModel extends AndroidViewModel {
         return sortOrder;
     }
 
-    public boolean isUnreadOnly() {
-        return unreadOnly;
+    public boolean isShowRead() {
+        return showRead;
+    }
+
+    public boolean isShowUnread() {
+        return showUnread;
     }
 
     public boolean isStarredOnly() {
@@ -171,7 +166,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void refresh() {
-        repository.loadArticles(scopeFeedId, scopeTagId, unreadOnly, starredOnly, searchQuery, sortOrder);
+        repository.loadArticles(scopeFeedId, scopeTagId, showRead, showUnread, starredOnly, searchQuery, sortOrder);
     }
 
     private void updateArticleOptimistically(long articleId, Consumer<Article> mutator) {

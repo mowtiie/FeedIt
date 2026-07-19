@@ -8,6 +8,7 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
+        android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -296,14 +297,6 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/nav_all" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/button_startup_unread"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/nav_unread" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/button_startup_starred"

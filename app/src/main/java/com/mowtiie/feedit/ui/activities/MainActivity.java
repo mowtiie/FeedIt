@@ -57,6 +57,8 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
 
     private boolean crashDialogShown;
 
+    private boolean isOnAllScope = true;
+
     private boolean manualSyncWasRunning;
 
     private static final long SEARCH_DEBOUNCE_MS = 250L;
@@ -123,18 +125,16 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
                 .getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL);
 
         int checkedItemId;
-        if (PrefsKeys.STARTUP_PAGE_UNREAD.equals(startupPage)) {
-            viewModel.selectUnread();
-            setTitle(R.string.nav_unread);
-            checkedItemId = R.id.nav_unread;
-        } else if (PrefsKeys.STARTUP_PAGE_STARRED.equals(startupPage)) {
+        if (PrefsKeys.STARTUP_PAGE_STARRED.equals(startupPage)) {
             viewModel.selectStarred();
             setTitle(R.string.nav_starred);
             checkedItemId = R.id.nav_starred;
+            isOnAllScope = false;
         } else {
             viewModel.selectAll();
             setTitle(R.string.app_name);
             checkedItemId = R.id.nav_all;
+            isOnAllScope = true;
         }
 
         binding.navView.getMenu().findItem(checkedItemId).setChecked(true);
@@ -196,13 +196,13 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         if (id == R.id.nav_all) {
             viewModel.selectAll();
             setTitle(R.string.app_name);
-        } else if (id == R.id.nav_unread) {
-            viewModel.selectUnread();
-            setTitle(R.string.nav_unread);
+            isOnAllScope = true;
         } else if (id == R.id.nav_starred) {
             viewModel.selectStarred();
             setTitle(R.string.nav_starred);
+            isOnAllScope = false;
         }
+        invalidateOptionsMenu();
 
         binding.drawerLayout.closeDrawer(GravityCompat.START);
         return true;
@@ -272,7 +272,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         if (query != null && !query.trim().isEmpty()) {
             kaomojiRes = R.string.empty_state_no_results_kaomoji;
             captionRes = R.string.empty_state_no_results;
-        } else if (viewModel.isUnreadOnly()) {
+        } else if (!viewModel.isShowRead() && viewModel.isShowUnread()) {
             kaomojiRes = R.string.empty_state_all_caught_up_kaomoji;
             captionRes = R.string.empty_state_all_caught_up;
         } else {
@@ -324,6 +324,25 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem filterItem = menu.findItem(R.id.action_filter);
+        if (filterItem != null) {
+            filterItem.setVisible(isOnAllScope);
+        }
+
+        MenuItem readItem = menu.findItem(R.id.filter_show_read);
+        if (readItem != null) {
+            readItem.setChecked(viewModel.isShowRead());
+        }
+        MenuItem unreadItem = menu.findItem(R.id.filter_show_unread);
+        if (unreadItem != null) {
+            unreadItem.setChecked(viewModel.isShowUnread());
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
@@ -335,8 +354,26 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         } else if (id == R.id.action_mark_all_read) {
             viewModel.markAllRead();
             return true;
+        } else if (id == R.id.filter_show_read || id == R.id.filter_show_unread) {
+            return handleReadStateFilterClick(item);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean handleReadStateFilterClick(MenuItem item) {
+        boolean newChecked = !item.isChecked();
+        boolean otherIsRead = item.getItemId() == R.id.filter_show_unread;
+        boolean otherChecked = otherIsRead ? viewModel.isShowRead() : viewModel.isShowUnread();
+
+        if (!newChecked && !otherChecked) {
+            return true;
+        }
+
+        item.setChecked(newChecked);
+        boolean showRead = item.getItemId() == R.id.filter_show_read ? newChecked : viewModel.isShowRead();
+        boolean showUnread = item.getItemId() == R.id.filter_show_unread ? newChecked : viewModel.isShowUnread();
+        viewModel.setReadStateFilter(showRead, showUnread);
+        return true;
     }
 
     private void showSortDialog() {

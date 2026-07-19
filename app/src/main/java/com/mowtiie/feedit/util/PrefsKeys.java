@@ -12,13 +12,13 @@ public final class PrefsKeys {
 
     public static final String STARTUP_PAGE = "startup_page";
     public static final String STARTUP_PAGE_ALL = "all";
-    public static final String STARTUP_PAGE_UNREAD = "unread";
     public static final String STARTUP_PAGE_STARRED = "starred";
 
     public static final String CONTRAST_LEVEL = "contrast_level";
     public static final String CONTRAST_STANDARD = "standard";
     public static final String CONTRAST_MEDIUM = "medium";
     public static final String CONTRAST_HIGH = "high";
+
 
     public static final String DYNAMIC_COLORS_ENABLED = "dynamic_colors_enabled";
 

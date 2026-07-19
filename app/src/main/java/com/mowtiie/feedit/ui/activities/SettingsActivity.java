@@ -84,9 +84,7 @@ public class SettingsActivity extends FeedItActivity {
                 return;
             }
             String page;
-            if (checkedId == R.id.button_startup_unread) {
-                page = PrefsKeys.STARTUP_PAGE_UNREAD;
-            } else if (checkedId == R.id.button_startup_starred) {
+            if (checkedId == R.id.button_startup_starred) {
                 page = PrefsKeys.STARTUP_PAGE_STARRED;
             } else {
                 page = PrefsKeys.STARTUP_PAGE_ALL;
@@ -167,9 +165,7 @@ public class SettingsActivity extends FeedItActivity {
 
         viewModel.getStartupPage().observe(this, page -> {
             int id;
-            if (PrefsKeys.STARTUP_PAGE_UNREAD.equals(page)) {
-                id = R.id.button_startup_unread;
-            } else if (PrefsKeys.STARTUP_PAGE_STARRED.equals(page)) {
+            if (PrefsKeys.STARTUP_PAGE_STARRED.equals(page)) {
                 id = R.id.button_startup_starred;
             } else {
                 id = R.id.button_startup_all;

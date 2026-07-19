@@ -97,7 +97,7 @@ public class ArticleDao {
         }
     }
 
-    public List<Article> getArticles(Long feedId, Long tagId, boolean unreadOnly, boolean starredOnly, String searchQuery, SortOrder sortOrder) {
+    public List<Article> getArticles(Long feedId, Long tagId, boolean showRead, boolean showUnread, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Article> articles = new ArrayList<>();
 

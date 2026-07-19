@@ -7,34 +7,31 @@
         <item
             android:id="@+id/nav_all"
             android:checked="true"
-            android:icon="@drawable/ic_all_selector"
             android:title="@string/nav_all" />
         <item
-            android:id="@+id/nav_unread"
-            android:icon="@drawable/ic_unread"
-            android:title="@string/nav_unread" />
-        <item
             android:id="@+id/nav_starred"
-            android:icon="@drawable/ic_star_selector"
             android:title="@string/nav_starred" />
     </group>
 
-    <group android:id="@+id/group_footer">
-        <item
-            android:id="@+id/nav_manage_feeds"
-            android:icon="@drawable/ic_rss_feed"
-            android:title="@string/nav_manage_feeds" />
-        <item
-            android:id="@+id/nav_manage_tags"
-            android:icon="@drawable/ic_tag"
-            android:title="@string/nav_manage_tags" />
+    <item android:title="@string/nav_section_manage">
+        <menu>
+            <group android:id="@+id/group_manage">
+                <item
+                    android:id="@+id/nav_manage_feeds"
+                    android:title="@string/nav_manage_feeds" />
+                <item
+                    android:id="@+id/nav_manage_tags"
+                    android:title="@string/nav_manage_tags" />
+            </group>
+        </menu>
+    </item>
+
+    <group android:id="@+id/group_app">
         <item
             android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_settings_selector"
             android:title="@string/nav_settings" />
         <item
             android:id="@+id/nav_about"
-            android:icon="@drawable/ic_info_selector"
             android:title="@string/title_about" />
     </group>
 

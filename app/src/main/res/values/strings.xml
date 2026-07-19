@@ -3,8 +3,8 @@
     <string name="app_name">FeedIt</string>
 
     <string name="nav_all">All</string>
-    <string name="nav_unread">Unread</string>
     <string name="nav_starred">Starred</string>
+    <string name="nav_section_manage">Manage</string>
     <string name="nav_manage_feeds">Feeds</string>
     <string name="nav_manage_tags">Tags</string>
     <string name="nav_settings">Settings</string>
@@ -21,11 +21,8 @@
     <string name="sort_unread_first">Unread first</string>
     <string name="sort_by_feed">By feed</string>
 
-    <string name="filter_dialog_title">Filter</string>
-    <string name="filter_unread_only">Unread only</string>
-    <string name="filter_starred_only">Starred only</string>
-    <string name="filter_apply">Apply</string>
-    <string name="filter_cancel">Cancel</string>
+    <string name="filter_show_read">Read</string>
+    <string name="filter_show_unread">Unread</string>
 
     <string name="empty_state_no_articles_kaomoji">ᕕ( ᐛ )ᕗ</string>
     <string name="empty_state_no_articles">No articles yet. Add a feed to get started.</string>

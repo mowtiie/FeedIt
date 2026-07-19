@@ -49,11 +49,9 @@ public class FeedRepository {
         return articles;
     }
 
-    public void loadArticles(Long feedId, Long tagId, boolean unreadOnly, boolean starredOnly,
-                             String searchQuery, ArticleDao.SortOrder sortOrder) {
+    public void loadArticles(Long feedId, Long tagId, boolean showRead, boolean showUnread, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
         executor.execute(() -> {
-            List<Article> result = articleDao.getArticles(
-                    feedId, tagId, unreadOnly, starredOnly, searchQuery, sortOrder);
+            List<Article> result = articleDao.getArticles(feedId, tagId, showRead, showUnread, starredOnly, searchQuery, sortOrder);
             articles.postValue(result);
         });
     }
