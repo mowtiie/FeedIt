@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import androidx.annotation.Keep;
+
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.sync.SyncLog;
 
@@ -12,6 +14,7 @@ import java.util.List;
 
 public class ArticleDao {
 
+    @Keep
     public enum SortOrder {
         NEWEST, OLDEST, UNREAD_FIRST, BY_FEED
     }
