@@ -117,9 +117,6 @@ public class ArticleDao {
             conditions.add("a.feed_id = ?");
             args.add(String.valueOf(feedId));
         }
-        if (unreadOnly) {
-            conditions.add("a.is_read = 0");
-        }
         if (starredOnly) {
             conditions.add("a.is_starred = 1");
         }

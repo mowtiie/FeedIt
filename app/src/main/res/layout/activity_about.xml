@@ -8,6 +8,7 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
+        android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -15,7 +16,6 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:titleTextColor="?attr/colorOnSurface"
             android:title="@string/title_about" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -33,6 +33,18 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!--
+            One card, no in-card header — the Toolbar's own "About" title already
+            establishes context, so a redundant second "About" label inside the card
+            would just repeat itself. Same row treatment as Settings: minHeight="48dp"
+            + vertical padding for real touch targets, tappable rows get the same
+            trailing chevron, static/informational rows (License, Version) don't.
+
+            The card's content LinearLayout no longer carries blanket padding — each
+            row supplies its own paddingHorizontal="16dp" instead, so the row's own
+            bounds (and its ?attr/selectableItemBackground ripple, for the tappable
+            ones) span the full card width rather than stopping short of it.
+            -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
@@ -42,9 +54,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:orientation="vertical">
 
+                    <!-- License — tappable, opens a dialog with the full license text -->
                     <LinearLayout
                         android:id="@+id/row_license"
                         android:layout_width="match_parent"
@@ -55,6 +67,7 @@
                         android:gravity="center_vertical"
                         android:minHeight="48dp"
                         android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
                         android:paddingVertical="12dp">
 
                         <LinearLayout
@@ -91,6 +104,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
+                    <!-- Source Code — tappable, opens url_source_code -->
                     <LinearLayout
                         android:id="@+id/row_source_code"
                         android:layout_width="match_parent"
@@ -101,6 +115,7 @@
                         android:gravity="center_vertical"
                         android:minHeight="48dp"
                         android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
                         android:paddingVertical="12dp">
 
                         <LinearLayout
@@ -137,6 +152,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
+                    <!-- Support the developer — tappable, opens url_support -->
                     <LinearLayout
                         android:id="@+id/row_support"
                         android:layout_width="match_parent"
@@ -147,6 +163,7 @@
                         android:gravity="center_vertical"
                         android:minHeight="48dp"
                         android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
                         android:paddingVertical="12dp">
 
                         <LinearLayout
@@ -183,6 +200,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
+                    <!-- Author — tappable, opens url_author -->
                     <LinearLayout
                         android:id="@+id/row_author"
                         android:layout_width="match_parent"
@@ -193,6 +211,7 @@
                         android:gravity="center_vertical"
                         android:minHeight="48dp"
                         android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
                         android:paddingVertical="12dp">
 
                         <LinearLayout
@@ -229,6 +248,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
+                    <!-- Version — clickable for the hidden 7-tap easter egg, but deliberately
+                         no chevron: unlike License, nothing visibly happens on 6 of 7 taps,
+                         so a chevron here would misleadingly imply it always opens something -->
                     <LinearLayout
                         android:id="@+id/row_version"
                         android:layout_width="match_parent"
@@ -239,6 +261,7 @@
                         android:gravity="center_vertical"
                         android:minHeight="48dp"
                         android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
                         android:paddingVertical="12dp">
 
                         <LinearLayout
@@ -259,7 +282,7 @@
                                 android:layout_height="wrap_content"
                                 android:textAppearance="?attr/textAppearanceBodySmall"
                                 android:textColor="?attr/colorOnSurfaceVariant"
-                                tools:text="1.0" />
+                                tools:text="1.0.0" />
 
                         </LinearLayout>
                     </LinearLayout>
