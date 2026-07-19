@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name=".FeedItApp"
@@ -17,6 +17,10 @@
         android:roundIcon="${appRoundIcon}"
         android:supportsRtl="true"
         android:theme="@style/Theme.FeedIt">
+        <activity
+            android:name=".ui.activities.FeedNotificationSettingsActivity"
+            android:parentActivityName=".ui.activities.MainActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.activities.AboutActivity"
             android:exported="false" />

@@ -80,6 +80,13 @@ public class FeedRepository {
         executor.execute(() -> feedsWithTags.postValue(feedDao.getAllFeedsWithTags()));
     }
 
+    public void setFeedNotifyNew(long feedId, boolean enabled) {
+        executor.execute(() -> {
+            feedDao.setNotifyNew(feedId, enabled);
+            feedsWithTags.postValue(feedDao.getAllFeedsWithTags());
+        });
+    }
+
     public void getFeedById(long feedId, RepositoryCallback<Feed> callback) {
         executor.execute(() -> runCallback(() -> feedDao.getFeedById(feedId), callback));
     }

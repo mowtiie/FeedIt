@@ -120,6 +120,7 @@ public class SettingsActivity extends FeedItActivity {
         });
 
         binding.rowArticleLayout.setOnClickListener(v -> showArticleLayoutDialog());
+        binding.rowFeedNotifications.setOnClickListener(v -> startActivity(new Intent(this, FeedNotificationSettingsActivity.class)));
         binding.rowSyncFrequency.setOnClickListener(v -> showSyncFrequencyDialog());
         binding.rowBatteryOptimization.setOnClickListener(v -> handleBatteryOptimizationClick());
 

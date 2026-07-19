@@ -21,6 +21,15 @@
     <string name="sort_unread_first">Unread first</string>
     <string name="sort_by_feed">By feed</string>
 
+    <string name="title_feed_notifications">Feed Notifications</string>
+    <string name="label_feed_notifications_title">Manage feed notifications</string>
+    <string name="label_feed_notifications_subtitle">Choose which feeds can send notifications</string>
+    <string name="dialog_sort_feeds_title">Sort by</string>
+    <string name="sort_feeds_name_asc">Name (A\u2013Z)</string>
+    <string name="sort_feeds_name_desc">Name (Z\u2013A)</string>
+    <string name="sort_feeds_notify_on_first">Notifications on first</string>
+    <string name="sort_feeds_notify_off_first">Notifications off first</string>
+
     <string name="filter_show_read">Read</string>
     <string name="filter_show_unread">Unread</string>
 
@@ -162,6 +171,7 @@
 
     <!-- Empty states -->
     <string name="empty_state_no_results_kaomoji">(・_・;)</string>
+    <string name="empty_state_no_matching_feeds">No matching feeds</string>
     <string name="empty_state_no_results">No matching articles</string>
     <string name="empty_state_all_caught_up_kaomoji">ヽ(•‿•)ノ</string>
     <string name="empty_state_all_caught_up">You\'re all caught up!</string>

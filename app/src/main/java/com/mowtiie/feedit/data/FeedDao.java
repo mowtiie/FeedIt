@@ -154,4 +154,11 @@ public class FeedDao {
         values.put("created_at", feed.getCreatedAt());
         return values;
     }
+
+    public void setNotifyNew(long feedId, boolean enabled) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("notify_new", enabled ? 1 : 0);
+        db.update("feeds", values, "id = ?", new String[]{String.valueOf(feedId)});
+    }
 }
