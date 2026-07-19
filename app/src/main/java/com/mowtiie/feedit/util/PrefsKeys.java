@@ -5,6 +5,8 @@ public final class PrefsKeys {
     public static final String PREFS_NAME = "feedit_prefs";
 
     public static final String SORT_ORDER = "sort_order";
+    public static final String SHOW_READ = "show_read";
+    public static final String SHOW_UNREAD = "show_unread";
     public static final String SYNC_WIFI_ONLY = "sync_wifi_only";
     public static final String SYNC_INTERVAL_MINUTES = "sync_interval_minutes";
     public static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
@@ -19,10 +21,9 @@ public final class PrefsKeys {
     public static final String CONTRAST_MEDIUM = "medium";
     public static final String CONTRAST_HIGH = "high";
 
-
     public static final String DYNAMIC_COLORS_ENABLED = "dynamic_colors_enabled";
 
-    public static final String ARTICLE_LAYOUT_STYLE = "article_layout_style";
+    public static final String ARTICLE_LAYOUT_STYLE = "article_layout_style"; // one of the LAYOUT_* values below
     public static final String LAYOUT_LIST = "list";
     public static final String LAYOUT_COMPACT = "compact";
     public static final String LAYOUT_CARD = "card";

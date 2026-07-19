@@ -14,6 +14,7 @@ import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.util.ArticleUiState;
+import com.mowtiie.feedit.util.PrefsKeys;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,8 +36,8 @@ public class MainViewModel extends AndroidViewModel {
 
     private Long scopeFeedId = null;
     private Long scopeTagId = null;
-    private boolean showRead = true;
-    private boolean showUnread = true;
+    private boolean showRead;
+    private boolean showUnread;
     private boolean starredOnly = false;
     private String searchQuery = null;
     private ArticleDao.SortOrder sortOrder;
@@ -50,6 +51,8 @@ public class MainViewModel extends AndroidViewModel {
         prefs = application.getSharedPreferences(PREFS_NAME, Application.MODE_PRIVATE);
         sortOrder = ArticleDao.SortOrder.valueOf(
                 prefs.getString(KEY_SORT_ORDER, ArticleDao.SortOrder.NEWEST.name()));
+        showRead = prefs.getBoolean(PrefsKeys.SHOW_READ, true);
+        showUnread = prefs.getBoolean(PrefsKeys.SHOW_UNREAD, true);
 
         articleUiStates.addSource(repository.getArticles(), articles -> {
             latestArticles = articles;
@@ -106,6 +109,10 @@ public class MainViewModel extends AndroidViewModel {
     public void setReadStateFilter(boolean showRead, boolean showUnread) {
         this.showRead = showRead;
         this.showUnread = showUnread;
+        prefs.edit()
+                .putBoolean(PrefsKeys.SHOW_READ, showRead)
+                .putBoolean(PrefsKeys.SHOW_UNREAD, showUnread)
+                .apply();
         refresh();
     }
 
@@ -140,18 +147,18 @@ public class MainViewModel extends AndroidViewModel {
         return starredOnly;
     }
 
-    public void toggleRead(Article article) {
-        boolean newValue = !article.isRead();
-        updateArticleOptimistically(article.getId(), copy -> copy.setRead(newValue));
-        repository.setArticleRead(article.getId(), newValue);
-    }
-
     public void markRead(Article article) {
         if (article.isRead()) {
             return;
         }
         updateArticleOptimistically(article.getId(), copy -> copy.setRead(true));
         repository.setArticleRead(article.getId(), true);
+    }
+
+    public void toggleRead(Article article) {
+        boolean newValue = !article.isRead();
+        updateArticleOptimistically(article.getId(), copy -> copy.setRead(newValue));
+        repository.setArticleRead(article.getId(), newValue);
     }
 
     public void toggleStarred(Article article) {
@@ -225,9 +232,6 @@ public class MainViewModel extends AndroidViewModel {
         if (showRead != showUnread && article.isRead() != showRead) {
             return false;
         }
-        if (starredOnly && !article.isStarred()) {
-            return false;
-        }
-        return true;
+        return !starredOnly || article.isStarred();
     }
 }
