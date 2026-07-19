@@ -170,20 +170,6 @@ public class MainViewModel extends AndroidViewModel {
         refresh();
     }
 
-    public void markSelectedRead(Set<Long> articleIds, boolean read) {
-        updateArticlesOptimistically(articleIds, copy -> copy.setRead(read));
-        for (Long id : articleIds) {
-            repository.setArticleRead(id, read);
-        }
-    }
-
-    public void starSelected(Set<Long> articleIds, boolean starred) {
-        updateArticlesOptimistically(articleIds, copy -> copy.setStarred(starred));
-        for (Long id : articleIds) {
-            repository.setArticleStarred(id, starred);
-        }
-    }
-
     public void refresh() {
         repository.loadArticles(scopeFeedId, scopeTagId, unreadOnly, starredOnly, searchQuery, sortOrder);
     }

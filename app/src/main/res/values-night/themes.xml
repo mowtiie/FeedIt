@@ -46,16 +46,11 @@
         <item name="colorSurfaceContainer">@color/md_theme_surfaceContainer</item>
         <item name="colorSurfaceContainerHigh">@color/md_theme_surfaceContainerHigh</item>
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
-
-        <!-- Custom styles -->
-        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="Theme.FeedIt.MediumContrast" parent="ThemeOverlay.FeedIt.MediumContrast">
-        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="Theme.FeedIt.HighContrast" parent="ThemeOverlay.FeedIt.HighContrast">
-        <item name="windowActionModeOverlay">true</item>
     </style>
 </resources>

@@ -14,12 +14,6 @@ public final class InsetsUtil {
     }
 
     public static void applyEdgeToEdgeInsets(@NonNull View topBar, @Nullable View bottomContent) {
-        ViewCompat.setOnApplyWindowInsetsListener(topBar, (v, windowInsets) -> {
-            Insets bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(bars.left, bars.top, bars.right, v.getPaddingBottom());
-            return windowInsets;
-        });
-
         if (bottomContent != null) {
             ViewCompat.setOnApplyWindowInsetsListener(bottomContent, (v, windowInsets) -> {
                 Insets bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());

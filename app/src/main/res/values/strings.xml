@@ -27,7 +27,7 @@
     <string name="filter_apply">Apply</string>
     <string name="filter_cancel">Cancel</string>
 
-    <string name="empty_state_no_articles_kaomoji">-∘∘∘( °ヮ° )?</string>
+    <string name="empty_state_no_articles_kaomoji">ᕕ( ᐛ )ᕗ</string>
     <string name="empty_state_no_articles">No articles yet. Add a feed to get started.</string>
 
     <string name="content_desc_article_thumbnail">Article thumbnail</string>
@@ -70,9 +70,9 @@
     <string name="title_manage_feeds">Manage Feeds</string>
     <string name="title_manage_tags">Manage Tags</string>
     <string name="action_add">Add</string>
-    <string name="empty_state_no_feeds_kaomoji">(－ω－)zzZ</string>
+    <string name="empty_state_no_feeds_kaomoji">(｡･ω･｡)</string>
     <string name="empty_state_no_feeds">No feeds yet.</string>
-    <string name="empty_state_no_tags_kaomoji">(－ω－)zzZ</string>
+    <string name="empty_state_no_tags_kaomoji">( ˙ᵕ˙ )</string>
     <string name="empty_state_no_tags">No tags yet.</string>
     <string name="content_desc_delete_feed">Delete feed</string>
     <string name="content_desc_edit_tag">Edit tag</string>
@@ -163,16 +163,12 @@
     <string name="action_import_opml">Import OPML</string>
     <string name="action_export_opml">Export OPML</string>
 
-    <!-- Multi-select (article list) -->
-    <string name="action_unstar">Unstar</string>
-    <string name="selection_count_format">%d selected</string>
-
     <!-- Empty states -->
-    <string name="empty_state_no_results_kaomoji">(╭ರ_•́)</string>
+    <string name="empty_state_no_results_kaomoji">(・_・;)</string>
     <string name="empty_state_no_results">No matching articles</string>
-    <string name="empty_state_all_caught_up_kaomoji">٩(^ᗜ^ )و´-</string>
+    <string name="empty_state_all_caught_up_kaomoji">ヽ(•‿•)ノ</string>
     <string name="empty_state_all_caught_up">You\'re all caught up!</string>
-    <string name="empty_state_no_articles_for_feed_kaomoji">╮(ᵕ—ᴗ—)╭</string>
+    <string name="empty_state_no_articles_for_feed_kaomoji">(´・ω・`)</string>
     <string name="empty_state_no_articles_for_feed">No articles yet for this feed.</string>
 
     <!-- Crash reporting -->

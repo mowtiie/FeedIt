@@ -4,14 +4,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.view.ActionMode;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -24,9 +22,6 @@ import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapter.Listener {
 
     public static final String EXTRA_FEED_ID = "extra_feed_id";
@@ -35,47 +30,6 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     private ActivityFeedArticlesBinding binding;
     private MainViewModel viewModel;
     private ArticleAdapter adapter;
-
-    private final Set<Long> selectedArticleIds = new HashSet<>();
-    private ActionMode actionMode;
-
-    private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            getMenuInflater().inflate(R.menu.menu_article_selection, menu);
-            return true;
-        }
-
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            return false;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            int id = item.getItemId();
-            if (id == R.id.action_mark_read) {
-                viewModel.markSelectedRead(selectedArticleIds, true);
-            } else if (id == R.id.action_mark_unread) {
-                viewModel.markSelectedRead(selectedArticleIds, false);
-            } else if (id == R.id.action_star_selected) {
-                viewModel.starSelected(selectedArticleIds, true);
-            } else if (id == R.id.action_unstar_selected) {
-                viewModel.starSelected(selectedArticleIds, false);
-            } else {
-                return false;
-            }
-            mode.finish();
-            return true;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            actionMode = null;
-            selectedArticleIds.clear();
-            adapter.updateSelection(selectedArticleIds, false);
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,12 +72,8 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (actionMode != null) {
-                    actionMode.finish();
-                } else {
-                    setEnabled(false);
-                    getOnBackPressedDispatcher().onBackPressed();
-                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
             }
         });
     }
@@ -152,11 +102,6 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
 
     @Override
     public void onArticleClicked(ArticleUiState item) {
-        if (actionMode != null) {
-            toggleSelection(item);
-            return;
-        }
-
         viewModel.markRead(item.getArticle());
 
         if (item.getFeedOpenMode() == Feed.OPEN_MODE_BROWSER) {
@@ -166,35 +111,6 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
             intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_ID, item.getArticle().getId());
             startActivity(intent);
         }
-    }
-
-    @Override
-    public void onArticleLongClicked(ArticleUiState item) {
-        if (actionMode == null) {
-            actionMode = startSupportActionMode(actionModeCallback);
-        }
-        toggleSelection(item);
-    }
-
-    private void toggleSelection(ArticleUiState item) {
-        long id = item.getArticle().getId();
-        if (selectedArticleIds.contains(id)) {
-            selectedArticleIds.remove(id);
-        } else {
-            selectedArticleIds.add(id);
-        }
-
-        if (selectedArticleIds.isEmpty()) {
-            if (actionMode != null) {
-                actionMode.finish();
-            }
-            return;
-        }
-
-        if (actionMode != null) {
-            actionMode.setTitle(getString(R.string.selection_count_format, selectedArticleIds.size()));
-        }
-        adapter.updateSelection(selectedArticleIds, true);
     }
 
     private void openInBrowser(String url) {
