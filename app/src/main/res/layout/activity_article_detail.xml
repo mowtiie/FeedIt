@@ -17,6 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/collapsingToolbarLayoutMediumSize"
             android:fitsSystemWindows="true"
+            app:collapsedTitleTextAppearance="@style/TextAppearance.FeedIt.ToolbarTitle"
+            app:expandedTitleTextAppearance="@style/TextAppearance.FeedIt.ToolbarTitle"
             app:extraMultilineHeightEnabled="true"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
             app:maxLines="3">

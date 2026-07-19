@@ -53,4 +53,13 @@
 
     <style name="Theme.FeedIt.HighContrast" parent="ThemeOverlay.FeedIt.HighContrast">
     </style>
+
+    <style name="TextAppearance.FeedIt.ToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">serif</item>
+        <item name="fontFamily">serif</item>
+    </style>
+
+    <style name="Widget.FeedIt.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.FeedIt.ToolbarTitle</item>
+    </style>
 </resources>
