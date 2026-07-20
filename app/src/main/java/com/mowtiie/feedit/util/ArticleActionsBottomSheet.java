@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.appcompat.content.res.AppCompatResources;
+
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textview.MaterialTextView;
 import com.mowtiie.feedit.R;
@@ -31,8 +33,10 @@ public final class ArticleActionsBottomSheet {
         MaterialTextView textReadState = sheetView.findViewById(R.id.text_mark_read_state);
         if (article.isRead()) {
             textReadState.setText(R.string.action_mark_unread);
+            iconReadState.setImageResource(R.drawable.ic_check_remove);
         } else {
             textReadState.setText(R.string.action_mark_read);
+            iconReadState.setImageResource(R.drawable.ic_check);
         }
         sheetView.findViewById(R.id.row_mark_read_state).setOnClickListener(v -> {
             viewModel.toggleRead(article);
@@ -42,10 +46,10 @@ public final class ArticleActionsBottomSheet {
         ImageView iconStarState = sheetView.findViewById(R.id.icon_star_state);
         MaterialTextView textStarState = sheetView.findViewById(R.id.text_star_state);
         if (article.isStarred()) {
-            iconStarState.setImageResource(android.R.drawable.btn_star_big_on);
+            iconStarState.setImageResource(R.drawable.ic_star_filled);
             textStarState.setText(R.string.action_unstar);
         } else {
-            iconStarState.setImageResource(android.R.drawable.btn_star_big_off);
+            iconStarState.setImageResource(R.drawable.ic_star_outlined);
             textStarState.setText(R.string.action_star);
         }
         sheetView.findViewById(R.id.row_star_state).setOnClickListener(v -> {
