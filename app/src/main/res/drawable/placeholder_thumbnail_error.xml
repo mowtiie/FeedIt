@@ -10,5 +10,5 @@
         android:width="28dp"
         android:height="28dp"
         android:gravity="center"
-        android:drawable="@drawable/ic_placeholder_image" />
+        android:drawable="@drawable/ic_error" />
 </layer-list>

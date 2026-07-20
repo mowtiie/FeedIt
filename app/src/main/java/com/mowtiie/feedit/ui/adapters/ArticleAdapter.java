@@ -138,7 +138,8 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         if (article.getImageUrl() != null) {
             Glide.with(imageView.getContext())
                     .load(article.getImageUrl())
-                    .placeholder(R.drawable.placeholder_thumbnail)
+                    .placeholder(R.drawable.placeholder_thumbnail_loading)
+                    .error(R.drawable.placeholder_thumbnail_error)
                     .centerCrop()
                     .into(imageView);
         } else {
@@ -147,8 +148,7 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         }
     }
 
-    private static void bindStarAndClick(MaterialCardView card, ImageView starIndicator,
-                                         ArticleUiState item, Listener listener) {
+    private static void bindStarAndClick(MaterialCardView card, ImageView starIndicator, ArticleUiState item, Listener listener) {
         Article article = item.getArticle();
         starIndicator.setVisibility(article.isStarred() ? View.VISIBLE : View.GONE);
         card.setCardBackgroundColor(resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
