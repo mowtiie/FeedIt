@@ -64,7 +64,7 @@ public class TagAdapter extends ListAdapter<Tag, TagAdapter.ViewHolder> {
 
         void bind(Tag tag, Listener listener) {
             binding.textTagName.setText(tag.getName());
-            binding.buttonEditTag.setOnClickListener(v -> listener.onEditClicked(tag));
+            binding.getRoot().setOnClickListener(v -> listener.onEditClicked(tag));
             binding.buttonDeleteTag.setOnClickListener(v -> listener.onDeleteClicked(tag));
         }
     }
