@@ -1,9 +1,5 @@
 package com.mowtiie.feedit.net;
 
-/**
- * Outcome of one HTTP fetch against a feed URL. Exactly one of
- * (body present), notModified, or a non-null errorMessage applies.
- */
 public class FetchResult {
 
     private final int statusCode;
