@@ -50,6 +50,10 @@
     <string name="action_share">Share</string>
     <string name="action_open_browser">Open in browser</string>
 
+    <!-- Hints -->
+    <string name="hint_search_articles">Search articles</string>
+    <string name="hint_search_feed_notification">Search feeds</string>
+
     <!-- Add / Edit Feed -->
     <string name="title_add_feed">Add Feed</string>
     <string name="title_edit_feed">Edit Feed</string>

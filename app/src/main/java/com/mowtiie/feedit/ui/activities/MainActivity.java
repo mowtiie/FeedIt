@@ -116,7 +116,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     @Override
     protected void onResume() {
         super.onResume();
-        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD);
+        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_MAGAZINE);
         adapter.setLayoutStyle(layoutStyle);
         viewModel.refresh();
     }
@@ -288,6 +288,9 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+
+        assert searchView != null;
+        searchView.setQueryHint(getString(R.string.hint_search_articles));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

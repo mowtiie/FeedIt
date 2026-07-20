@@ -78,6 +78,9 @@ public class FeedNotificationSettingsActivity extends FeedItActivity implements 
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_feed_notifications, menu);
         SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+
+        assert searchView != null;
+        searchView.setQueryHint(getString(R.string.hint_search_feed_notification));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

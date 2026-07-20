@@ -209,7 +209,9 @@ public class SettingsActivity extends FeedItActivity {
 
     private void showArticleLayoutDialog() {
         String[] values = {
-                PrefsKeys.LAYOUT_LIST, PrefsKeys.LAYOUT_COMPACT, PrefsKeys.LAYOUT_CARD,
+                PrefsKeys.LAYOUT_LIST,
+                PrefsKeys.LAYOUT_COMPACT,
+                PrefsKeys.LAYOUT_CARD,
                 PrefsKeys.LAYOUT_MAGAZINE
         };
         String[] labels = {

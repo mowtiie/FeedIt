@@ -62,7 +62,7 @@ public class SettingsViewModel extends AndroidViewModel {
         startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
         contrastLevel.setValue(prefs.getString(PrefsKeys.CONTRAST_LEVEL, PrefsKeys.CONTRAST_STANDARD));
         dynamicColorsEnabled.setValue(prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false));
-        articleLayoutStyle.setValue(prefs.getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD));
+        articleLayoutStyle.setValue(prefs.getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_MAGAZINE));
     }
 
     public LiveData<Boolean> getWifiOnly() {
