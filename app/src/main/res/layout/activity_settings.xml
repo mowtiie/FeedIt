@@ -330,6 +330,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        app:icon="@drawable/ic_all_selector"
                         android:text="@string/nav_all" />
 
                     <com.google.android.material.button.MaterialButton
@@ -338,6 +339,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        app:icon="@drawable/ic_star_selector"
                         android:text="@string/nav_starred" />
 
                 </com.google.android.material.button.MaterialButtonToggleGroup>
@@ -443,6 +445,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                app:icon="@drawable/ic_theme_selector"
                                 android:text="@string/option_dark_system" />
 
                             <com.google.android.material.button.MaterialButton
@@ -451,6 +454,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                app:icon="@drawable/ic_light_mode_selector"
                                 android:text="@string/option_dark_light" />
 
                             <com.google.android.material.button.MaterialButton
@@ -459,6 +463,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                app:icon="@drawable/ic_dark_mode_selector"
                                 android:text="@string/option_dark_dark" />
 
                         </com.google.android.material.button.MaterialButtonToggleGroup>
@@ -581,6 +586,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="8dp"
                             android:layout_weight="1"
+                            app:icon="@drawable/ic_arrow_upward"
                             android:text="@string/action_import_opml" />
 
                         <com.google.android.material.button.MaterialButton
@@ -590,6 +596,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
+                            app:icon="@drawable/ic_arrow_downward"
                             android:text="@string/action_export_opml" />
 
                     </LinearLayout>
