@@ -18,7 +18,6 @@ import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.ui.adapters.TagAdapter;
 import com.mowtiie.feedit.ui.viewmodel.TagListViewModel;
 import com.mowtiie.feedit.util.InsetsUtil;
-import com.mowtiie.feedit.util.TagColorPicker;
 
 public class TagManagementActivity extends FeedItActivity implements TagAdapter.Listener {
 
@@ -94,20 +93,6 @@ public class TagManagementActivity extends FeedItActivity implements TagAdapter.
     private void showTagDialog(Tag existingTag) {
         DialogTagEditorBinding dialogBinding = DialogTagEditorBinding.inflate(getLayoutInflater());
 
-        View[] fills = {
-                dialogBinding.swatchFill0, dialogBinding.swatchFill1, dialogBinding.swatchFill2,
-                dialogBinding.swatchFill3, dialogBinding.swatchFill4, dialogBinding.swatchFill5
-        };
-        View[] rings = {
-                dialogBinding.swatchRing0, dialogBinding.swatchRing1, dialogBinding.swatchRing2,
-                dialogBinding.swatchRing3, dialogBinding.swatchRing4, dialogBinding.swatchRing5
-        };
-
-        String initialColor = existingTag != null && existingTag.getColor() != null
-                ? existingTag.getColor() : TagColorPicker.PRESET_COLORS[0];
-        String[] selectedColor = {initialColor};
-        TagColorPicker.setup(fills, rings, initialColor, hex -> selectedColor[0] = hex);
-
         if (existingTag != null) {
             dialogBinding.editTagName.setText(existingTag.getName());
         }
@@ -123,7 +108,6 @@ public class TagManagementActivity extends FeedItActivity implements TagAdapter.
                     }
                     Tag tag = existingTag != null ? existingTag : new Tag();
                     tag.setName(name);
-                    tag.setColor(selectedColor[0]);
                     if (tag.getCreatedAt() == 0) {
                         tag.setCreatedAt(System.currentTimeMillis());
                     }

@@ -1,7 +1,5 @@
 package com.mowtiie.feedit.ui.adapters;
 
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -31,8 +29,7 @@ public class TagAdapter extends ListAdapter<Tag, TagAdapter.ViewHolder> {
 
         @Override
         public boolean areContentsTheSame(@NonNull Tag oldItem, @NonNull Tag newItem) {
-            return Objects.equals(oldItem.getName(), newItem.getName())
-                    && Objects.equals(oldItem.getColor(), newItem.getColor());
+            return Objects.equals(oldItem.getName(), newItem.getName());
         }
     };
 
@@ -67,13 +64,6 @@ public class TagAdapter extends ListAdapter<Tag, TagAdapter.ViewHolder> {
 
         void bind(Tag tag, Listener listener) {
             binding.textTagName.setText(tag.getName());
-            if (tag.getColor() != null) {
-                try {
-                    binding.viewTagColor.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(tag.getColor())));
-                } catch (IllegalArgumentException ignored) {
-                    // malformed color string — leave the default swatch color
-                }
-            }
             binding.buttonEditTag.setOnClickListener(v -> listener.onEditClicked(tag));
             binding.buttonDeleteTag.setOnClickListener(v -> listener.onDeleteClicked(tag));
         }

@@ -1,7 +1,5 @@
 package com.mowtiie.feedit.ui.adapters;
 
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -21,9 +19,7 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
 
     public interface Listener {
         void onFeedClicked(FeedTags item);
-
         void onEditClicked(FeedTags item);
-
         void onDeleteClicked(FeedTags item);
     }
 
@@ -60,8 +56,7 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemFeedManagementBinding binding =
-                ItemFeedManagementBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        ItemFeedManagementBinding binding = ItemFeedManagementBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(binding);
     }
 
@@ -90,12 +85,6 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
                 chip.setText(tag.getName());
                 chip.setClickable(false);
                 chip.setCheckable(false);
-                if (tag.getColor() != null) {
-                    try {
-                        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(tag.getColor())));
-                    } catch (IllegalArgumentException ignored) {
-                    }
-                }
                 binding.chipGroupFeedTags.addView(chip);
             }
 

@@ -63,9 +63,8 @@
     <string name="option_open_browser">Browser</string>
     <string name="action_save">Save</string>
 
-    <!-- Tag color dialog (shared by Add Feed\'s inline create + Tag Management\'s edit) -->
+    <!-- Tag editor dialog (shared by Add Feed's inline create + Tag Management's edit) -->
     <string name="hint_tag_name">Tag name</string>
-    <string name="label_color">Color</string>
     <string name="dialog_create_tag_title">New tag</string>
     <string name="dialog_edit_tag_title">Edit tag</string>
     <string name="action_create">Create</string>
@@ -84,7 +83,6 @@
     <string name="content_desc_delete_feed">Delete feed</string>
     <string name="content_desc_edit_tag">Edit tag</string>
     <string name="content_desc_delete_tag">Delete tag</string>
-    <string name="content_desc_tag_color">Tag color</string>
     <string name="confirm_delete_feed_title">Delete feed?</string>
     <string name="confirm_delete_feed_message">This removes the feed and all its saved articles. This can\'t be undone.</string>
     <string name="confirm_delete_tag_title">Delete tag?</string>

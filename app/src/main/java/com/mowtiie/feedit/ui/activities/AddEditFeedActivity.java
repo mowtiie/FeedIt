@@ -18,7 +18,6 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.ui.viewmodel.FeedEditViewModel;
 import com.mowtiie.feedit.util.InsetsUtil;
-import com.mowtiie.feedit.util.TagColorPicker;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -139,17 +138,6 @@ public class AddEditFeedActivity extends FeedItActivity {
     private void showCreateTagDialog() {
         DialogTagEditorBinding dialogBinding = DialogTagEditorBinding.inflate(getLayoutInflater());
 
-        View[] fills = {
-                dialogBinding.swatchFill0, dialogBinding.swatchFill1, dialogBinding.swatchFill2,
-                dialogBinding.swatchFill3, dialogBinding.swatchFill4, dialogBinding.swatchFill5
-        };
-        View[] rings = {
-                dialogBinding.swatchRing0, dialogBinding.swatchRing1, dialogBinding.swatchRing2,
-                dialogBinding.swatchRing3, dialogBinding.swatchRing4, dialogBinding.swatchRing5
-        };
-        String[] selectedColor = {TagColorPicker.PRESET_COLORS[0]};
-        TagColorPicker.setup(fills, rings, TagColorPicker.PRESET_COLORS[0], hex -> selectedColor[0] = hex);
-
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_create_tag_title)
                 .setView(dialogBinding.getRoot())
@@ -157,7 +145,7 @@ public class AddEditFeedActivity extends FeedItActivity {
                     String name = dialogBinding.editTagName.getText() != null
                             ? dialogBinding.editTagName.getText().toString().trim() : "";
                     if (!name.isEmpty()) {
-                        viewModel.createAndSelectTag(name, selectedColor[0]);
+                        viewModel.createAndSelectTag(name);
                     }
                 })
                 .setNegativeButton(R.string.action_cancel, null)

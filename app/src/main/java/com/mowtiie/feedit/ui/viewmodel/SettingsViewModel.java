@@ -23,7 +23,6 @@ import com.mowtiie.feedit.parser.OpmlParser;
 import com.mowtiie.feedit.parser.OpmlWriter;
 import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.util.PrefsKeys;
-import com.mowtiie.feedit.util.TagColorPicker;
 import com.mowtiie.feedit.util.ThemeManager;
 
 import java.io.IOException;
@@ -212,7 +211,7 @@ public class SettingsViewModel extends AndroidViewModel {
                         String key = tagName.toLowerCase(Locale.US);
                         Long tagId = tagIdByLowerName.get(key);
                         if (tagId == null) {
-                            tagId = tagDao.insertTag(new Tag(tagName, TagColorPicker.PRESET_COLORS[0]));
+                            tagId = tagDao.insertTag(new Tag(tagName, null));
                             tagIdByLowerName.put(key, tagId);
                         }
                         tagIds.add(tagId);
