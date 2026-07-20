@@ -17,6 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             style="@style/Widget.FeedIt.Toolbar"
+            app:titleTextColor="?attr/colorOnSurface"
             android:title="@string/title_manage_tags" />
     </com.google.android.material.appbar.AppBarLayout>
 

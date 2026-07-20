@@ -22,6 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:title="@string/app_name"
+                app:titleTextColor="?attr/colorOnSurface"
                 style="@style/Widget.FeedIt.Toolbar"
                 app:navigationContentDescription="@string/content_desc_open_drawer" />
 
