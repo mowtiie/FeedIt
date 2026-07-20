@@ -1,3 +1,7 @@
+-keep class androidx.work.** { *; }
+-keep class androidx.work.impl.** { *; }
+-keep class androidx.work.impl.WorkDatabase_Impl { *; }
+
 -keep class com.mowtiie.feedit.sync.SyncWorker { *; }
 
 -keepattributes SourceFile,LineNumberTable
