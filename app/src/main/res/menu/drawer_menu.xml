@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group
-        android:id="@+id/group_quick"
-        android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_all"
-            android:checked="true"
-            android:icon="@drawable/ic_all_selector"
-            android:title="@string/nav_all" />
-        <item
-            android:id="@+id/nav_starred"
-            android:icon="@drawable/ic_star_selector"
-            android:title="@string/nav_starred" />
-    </group>
+    <item android:title="@string/nav_section_articles">
+        <menu>
+            <group
+                android:id="@+id/group_quick"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_all"
+                    android:checked="true"
+                    android:icon="@drawable/ic_all_selector"
+                    android:title="@string/nav_all" />
+                <item
+                    android:id="@+id/nav_starred"
+                    android:icon="@drawable/ic_star_selector"
+                    android:title="@string/nav_starred" />
+            </group>
+        </menu>
+    </item>
 
     <item android:title="@string/nav_section_manage">
         <menu>

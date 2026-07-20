@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">FeedIt</string>
 
+    <string name="nav_section_articles">Articles</string>
     <string name="nav_all">All</string>
     <string name="nav_starred">Starred</string>
     <string name="nav_section_manage">Manage</string>
