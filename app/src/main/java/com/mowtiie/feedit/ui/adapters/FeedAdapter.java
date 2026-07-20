@@ -4,11 +4,13 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.chip.Chip;
+import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ItemFeedManagementBinding;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
@@ -75,8 +77,7 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
         }
 
         void bind(FeedTags item, Listener listener) {
-            binding.textFeedTitle.setText(item.getFeed().getTitle() != null
-                    ? item.getFeed().getTitle() : item.getFeed().getUrl());
+            binding.textFeedTitle.setText(item.getFeed().getTitle() != null ? item.getFeed().getTitle() : item.getFeed().getUrl());
             binding.textFeedUrl.setText(item.getFeed().getUrl());
 
             binding.chipGroupFeedTags.removeAllViews();
@@ -85,6 +86,8 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
                 chip.setText(tag.getName());
                 chip.setClickable(false);
                 chip.setCheckable(false);
+                chip.setChipIconResource(R.drawable.ic_tag);
+                chip.setChipIconTintResource(R.color.md_theme_onSurfaceVariant);
                 binding.chipGroupFeedTags.addView(chip);
             }
 
