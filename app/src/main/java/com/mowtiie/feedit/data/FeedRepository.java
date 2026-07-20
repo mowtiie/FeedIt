@@ -12,7 +12,6 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,9 +48,9 @@ public class FeedRepository {
         return articles;
     }
 
-    public void loadArticles(Long feedId, Long tagId, boolean showRead, boolean showUnread, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
+    public void loadArticles(Long feedId, Long tagId, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
         executor.execute(() -> {
-            List<Article> result = articleDao.getArticles(feedId, tagId, showRead, showUnread, starredOnly, searchQuery, sortOrder);
+            List<Article> result = articleDao.getArticles(feedId, tagId, starredOnly, searchQuery, sortOrder);
             articles.postValue(result);
         });
     }
@@ -85,10 +84,6 @@ public class FeedRepository {
             feedDao.setNotifyNew(feedId, enabled);
             feedsWithTags.postValue(feedDao.getAllFeedsWithTags());
         });
-    }
-
-    public void getFeedById(long feedId, RepositoryCallback<Feed> callback) {
-        executor.execute(() -> runCallback(() -> feedDao.getFeedById(feedId), callback));
     }
 
     public void saveFeed(Feed feed, List<Long> tagIds, RepositoryCallback<Long> callback) {
@@ -132,10 +127,6 @@ public class FeedRepository {
             tagDao.deleteTag(tagId);
             return null;
         }, callback, this::loadTags));
-    }
-
-    public void getUnreadCountForTag(long tagId, RepositoryCallback<Integer> callback) {
-        executor.execute(() -> runCallback(() -> tagDao.getUnreadCountForTag(tagId), callback));
     }
 
     private interface DbAction<T> {

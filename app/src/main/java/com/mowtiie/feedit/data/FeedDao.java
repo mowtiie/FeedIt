@@ -28,8 +28,7 @@ public class FeedDao {
     public int updateFeed(Feed feed) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = toContentValues(feed);
-        return db.update("feeds", values, "id = ?",
-                new String[]{String.valueOf(feed.getId())});
+        return db.update("feeds", values, "id = ?", new String[]{String.valueOf(feed.getId())});
     }
 
     public void deleteFeed(long feedId) {
@@ -82,20 +81,6 @@ public class FeedDao {
             }
         }
         return tags;
-    }
-
-    public void addTagToFeed(long feedId, long tagId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("feed_id", feedId);
-        values.put("tag_id", tagId);
-        db.insertWithOnConflict("feed_tags", null, values, SQLiteDatabase.CONFLICT_IGNORE);
-    }
-
-    public void removeTagFromFeed(long feedId, long tagId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete("feed_tags", "feed_id = ? AND tag_id = ?",
-                new String[]{String.valueOf(feedId), String.valueOf(tagId)});
     }
 
     public void setTagsForFeed(long feedId, List<Long> tagIds) {
