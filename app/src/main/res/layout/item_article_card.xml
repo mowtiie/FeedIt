@@ -52,7 +52,6 @@
                 android:maxLines="1"
                 android:textAppearance="?attr/textAppearanceBodySmall"
                 android:textColor="?attr/colorOnSurfaceVariant" />
-
         </LinearLayout>
 
         <ImageView
@@ -63,10 +62,8 @@
             android:clickable="false"
             android:contentDescription="@string/content_desc_starred"
             android:focusable="false"
-            android:src="@android:drawable/btn_star_big_on"
-            android:visibility="gone" />
-
-
+            android:src="@drawable/ic_star_filled"
+            android:visibility="gone"
+            app:tint="?attr/colorTertiary" />
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>
