@@ -12,7 +12,6 @@ import com.mowtiie.feedit.data.ArticleDao;
 import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.model.FeedTags;
-import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.PrefsKeys;
 
@@ -72,14 +71,6 @@ public class MainViewModel extends AndroidViewModel {
         return articleUiStates;
     }
 
-    public LiveData<List<Tag>> getTags() {
-        return repository.getTags();
-    }
-
-    public LiveData<List<FeedTags>> getFeedsWithTags() {
-        return repository.getFeedsWithTags();
-    }
-
     public void selectAll() {
         scopeFeedId = null;
         scopeTagId = null;
@@ -91,12 +82,6 @@ public class MainViewModel extends AndroidViewModel {
         scopeFeedId = null;
         scopeTagId = null;
         starredOnly = true;
-        refresh();
-    }
-
-    public void selectTag(long tagId) {
-        scopeTagId = tagId;
-        scopeFeedId = null;
         refresh();
     }
 
@@ -141,10 +126,6 @@ public class MainViewModel extends AndroidViewModel {
 
     public boolean isShowUnread() {
         return showUnread;
-    }
-
-    public boolean isStarredOnly() {
-        return starredOnly;
     }
 
     public void markRead(Article article) {
