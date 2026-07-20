@@ -24,6 +24,7 @@
                 android:title="@string/app_name"
                 app:titleTextColor="?attr/colorOnSurface"
                 style="@style/Widget.FeedIt.Toolbar"
+                app:navigationIconTint="?attr/colorOnSurfaceVariant"
                 app:navigationContentDescription="@string/content_desc_open_drawer" />
 
         </com.google.android.material.appbar.AppBarLayout>
