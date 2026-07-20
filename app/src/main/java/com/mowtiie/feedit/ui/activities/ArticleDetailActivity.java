@@ -99,8 +99,8 @@ public class ArticleDetailActivity extends FeedItActivity {
         Article article = viewModel.getArticle().getValue();
         if (article != null) {
             menu.findItem(R.id.action_star).setIcon(article.isStarred()
-                    ? android.R.drawable.btn_star_big_on
-                    : android.R.drawable.btn_star_big_off);
+                    ? R.drawable.ic_star_filled
+                    : R.drawable.ic_star_outlined);
             menu.findItem(R.id.action_toggle_read).setTitle(article.isRead()
                     ? R.string.action_mark_unread
                     : R.string.action_mark_read);
