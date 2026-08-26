@@ -29,8 +29,6 @@ import java.util.concurrent.Future;
 
 public class SyncWorker extends Worker {
 
-    public static final String KEY_IS_MANUAL = "is_manual";
-
     private static final int OUTCOME_NOT_MODIFIED = -2;
     private static final int OUTCOME_FETCH_FAILED = -1;
 
@@ -71,71 +69,59 @@ public class SyncWorker extends Worker {
         int threadCount = Math.min(MAX_CONCURRENT_FEEDS, feeds.size());
         SyncLog.d("=== sync run START — " + feeds.size() + " feeds, " + threadCount + " at a time ===");
 
-        List<FeedSyncResult> notifyResults;
-        int ok;
-        int notModified;
-        int failed;
-        int totalNewArticles;
-        try (ExecutorService pool = Executors.newFixedThreadPool(threadCount)) {
-            notifyResults = new ArrayList<>();
-            ok = 0;
-            notModified = 0;
-            failed = 0;
-            totalNewArticles = 0;
+        ExecutorService pool = Executors.newFixedThreadPool(threadCount);
+        List<FeedSyncResult> notifyResults = new ArrayList<>();
+        int ok = 0, notModified = 0, failed = 0;
+        int totalNewArticles = 0;
 
-            try {
-                List<Callable<FeedOutcome>> tasks = new ArrayList<>();
-                for (int i = 0; i < feeds.size(); i++) {
-                    Feed feed = feeds.get(i);
-                    String label = "[" + (i + 1) + "/" + feeds.size() + "] " + feed.getUrl();
-                    tasks.add(() -> runOneFeed(feed, label, feedDao, articleDao, fetcher, parser));
-                }
-
-                List<Future<FeedOutcome>> futures = pool.invokeAll(tasks);
-
-                for (Future<FeedOutcome> future : futures) {
-                    FeedOutcome result;
-                    try {
-                        result = future.get();
-                    } catch (ExecutionException e) {
-                        failed++;
-                        SyncLog.e("task failed unexpectedly", e);
-                        continue;
-                    }
-
-                    if (result.error != null || result.outcome == OUTCOME_FETCH_FAILED) {
-                        failed++;
-                    } else if (result.outcome == OUTCOME_NOT_MODIFIED) {
-                        notModified++;
-                    } else {
-                        ok++;
-                        totalNewArticles += result.outcome;
-                    }
-                    if (result.notifyResult != null) {
-                        notifyResults.add(result.notifyResult);
-                    }
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                SyncLog.w("sync interrupted — requesting retry");
-                return Result.retry();
-            } finally {
-                pool.shutdownNow();
+        try {
+            List<Callable<FeedOutcome>> tasks = new ArrayList<>();
+            for (int i = 0; i < feeds.size(); i++) {
+                Feed feed = feeds.get(i);
+                String label = "[" + (i + 1) + "/" + feeds.size() + "] " + feed.getUrl();
+                tasks.add(() -> runOneFeed(feed, label, feedDao, articleDao, fetcher, parser));
             }
+
+            List<Future<FeedOutcome>> futures = pool.invokeAll(tasks);
+
+            for (Future<FeedOutcome> future : futures) {
+                FeedOutcome result;
+                try {
+                    result = future.get();
+                } catch (ExecutionException e) {
+                    failed++;
+                    SyncLog.e("task failed unexpectedly", e);
+                    continue;
+                }
+
+                if (result.error != null || result.outcome == OUTCOME_FETCH_FAILED) {
+                    failed++;
+                } else if (result.outcome == OUTCOME_NOT_MODIFIED) {
+                    notModified++;
+                } else {
+                    ok++;
+                    totalNewArticles += result.outcome;
+                }
+                if (result.notifyResult != null) {
+                    notifyResults.add(result.notifyResult);
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            SyncLog.w("sync interrupted — requesting retry");
+            return Result.retry();
+        } finally {
+            pool.shutdownNow();
         }
 
         if (!notifyResults.isEmpty()) {
             NotificationHelper.notifyNewArticles(getApplicationContext(), notifyResults);
         }
 
-        boolean isManual = getInputData().getBoolean(KEY_IS_MANUAL, false);
-        if (isManual) {
-            NotificationHelper.notifySyncStatus(getApplicationContext(), totalNewArticles, failed);
-        }
-
         long totalElapsed = System.currentTimeMillis() - runStart;
         SyncLog.d("=== sync run END — ok=" + ok + " notModified=" + notModified
-                + " failed=" + failed + " totalTime=" + totalElapsed + "ms ===");
+                + " failed=" + failed + " newArticles=" + totalNewArticles
+                + " totalTime=" + totalElapsed + "ms ===");
         if (totalElapsed > 9 * 60 * 1000) {
             SyncLog.w("Run took over 9 min — approaching WorkManager's 10-min limit; "
                     + "the OS may kill long runs before they finish.");
@@ -166,7 +152,9 @@ public class SyncWorker extends Worker {
         }
     }
 
-    private int syncOneFeed(Feed feed, String label, FeedDao feedDao, ArticleDao articleDao, FeedFetcher fetcher, FeedParser parser, List<FeedSyncResult> notifyResults) throws Exception {
+    private int syncOneFeed(Feed feed, String label, FeedDao feedDao, ArticleDao articleDao,
+                            FeedFetcher fetcher, FeedParser parser,
+                            List<FeedSyncResult> notifyResults) throws Exception {
         long t0 = System.currentTimeMillis();
         FetchResult fetchResult = fetcher.fetch(feed.getUrl(), feed.getEtag(), feed.getLastModified());
         SyncLog.d("    " + label + " fetch() returned in " + (System.currentTimeMillis() - t0) + "ms"
@@ -213,13 +201,13 @@ public class SyncWorker extends Worker {
         }
 
         long insertStart = System.currentTimeMillis();
-        int newCount = articleDao.insertAllOrIgnore(parsedArticles);
-        SyncLog.d("    " + label + " inserted " + newCount + " new of " + parsedArticles.size()
+        List<Article> newArticles = articleDao.insertAllOrIgnore(parsedArticles);
+        SyncLog.d("    " + label + " inserted " + newArticles.size() + " new of " + parsedArticles.size()
                 + " in " + (System.currentTimeMillis() - insertStart) + "ms");
 
-        if (newCount > 0 && feed.isNotifyNew()) {
-            notifyResults.add(new FeedSyncResult(feed.getId(), feed.getTitle(), newCount));
+        if (!newArticles.isEmpty() && feed.isNotifyNew()) {
+            notifyResults.add(new FeedSyncResult(feed.getId(), feed.getTitle(), newArticles));
         }
-        return newCount;
+        return newArticles.size();
     }
 }

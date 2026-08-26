@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.work.Constraints;
-import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
@@ -42,19 +41,13 @@ public final class SyncScheduler {
     }
 
     public static void triggerManualSync(Context context) {
-        Data inputData = new Data.Builder()
-                .putBoolean(SyncWorker.KEY_IS_MANUAL, true)
-                .build();
-
         OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SyncWorker.class)
-                .setInputData(inputData)
                 .setConstraints(new Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build())
                 .build();
 
-        WorkManager.getInstance(context)
-                .enqueueUniqueWork(MANUAL_SYNC_WORK_NAME, ExistingWorkPolicy.REPLACE, request);
+        WorkManager.getInstance(context).enqueueUniqueWork(MANUAL_SYNC_WORK_NAME, ExistingWorkPolicy.REPLACE, request);
     }
 
     private static Constraints buildConstraints(Context context) {
