@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">FeedIt</string>
 
-    <string name="nav_section_articles">Articles</string>
     <string name="nav_all">All</string>
     <string name="nav_starred">Starred</string>
     <string name="nav_section_manage">Manage</string>
@@ -50,10 +49,6 @@
     <string name="action_share">Share</string>
     <string name="action_open_browser">Open in browser</string>
 
-    <!-- Hints -->
-    <string name="hint_search_articles">Search articles</string>
-    <string name="hint_search_feed_notification">Search feeds</string>
-
     <!-- Add / Edit Feed -->
     <string name="title_add_feed">Add Feed</string>
     <string name="title_edit_feed">Edit Feed</string>
@@ -100,16 +95,6 @@
     <plurals name="new_articles_count">
         <item quantity="one">%d new article</item>
         <item quantity="other">%d new articles</item>
-    </plurals>
-
-    <string name="notification_channel_sync_status_name">Sync status</string>
-    <string name="notification_channel_sync_status_description">A summary each time you manually refresh your feeds</string>
-    <string name="sync_status_title">Sync complete</string>
-    <string name="sync_status_no_new_articles">No new articles</string>
-
-    <plurals name="sync_status_failed_count">
-        <item quantity="one">%d feed couldn\'t be reached</item>
-        <item quantity="other">%d feeds couldn\'t be reached</item>
     </plurals>
 
     <!-- Settings -->
@@ -166,7 +151,7 @@
     <string name="option_layout_compact">Compact</string>
     <string name="option_layout_card">Card</string>
     <string name="option_layout_magazine">Magazine</string>
-    <string name="option_dark_system">Auto</string>
+    <string name="option_dark_system">System</string>
     <string name="option_dark_light">Light</string>
     <string name="option_dark_dark">Dark</string>
     <string name="label_feeds_backup">Backup</string>
