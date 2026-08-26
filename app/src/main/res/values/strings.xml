@@ -15,6 +15,8 @@
     <string name="action_filter">Filter</string>
     <string name="action_mark_all_read">Mark all read</string>
 
+    <string name="hint_search_feeds">Search feeds</string>
+
     <string name="sort_dialog_title">Sort by</string>
     <string name="sort_newest">Newest first</string>
     <string name="sort_oldest">Oldest first</string>
