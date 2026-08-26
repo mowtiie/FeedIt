@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">FeedIt</string>
 
+    <string name="nav_section_articles">Articles</string>
     <string name="nav_all">All</string>
     <string name="nav_starred">Starred</string>
     <string name="nav_section_manage">Manage</string>
@@ -16,6 +17,7 @@
     <string name="action_mark_all_read">Mark all read</string>
 
     <string name="hint_search_feeds">Search feeds</string>
+    <string name="hint_search_articles">Search articles</string>
 
     <string name="sort_dialog_title">Sort by</string>
     <string name="sort_newest">Newest first</string>
