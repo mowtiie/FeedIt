@@ -154,7 +154,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void refresh() {
-        repository.loadArticles(scopeFeedId, scopeTagId, starredOnly, searchQuery, sortOrder);
+        repository.loadArticles(scopeFeedId, scopeTagId, showRead, showUnread, starredOnly, searchQuery, sortOrder);
     }
 
     private void updateArticleOptimistically(long articleId, Consumer<Article> mutator) {

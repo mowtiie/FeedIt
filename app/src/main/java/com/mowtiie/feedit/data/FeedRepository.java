@@ -12,7 +12,6 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,10 +131,6 @@ public class FeedRepository {
             tagDao.deleteTag(tagId);
             return null;
         }, callback, this::loadTags));
-    }
-
-    public void getUnreadCountForTag(long tagId, RepositoryCallback<Integer> callback) {
-        executor.execute(() -> runCallback(() -> tagDao.getUnreadCountForTag(tagId), callback));
     }
 
     private interface DbAction<T> {
