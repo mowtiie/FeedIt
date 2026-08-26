@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import androidx.annotation.Keep;
 
 import com.mowtiie.feedit.model.Article;
+import com.mowtiie.feedit.sync.SyncLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,25 +25,39 @@ public class ArticleDao {
         this.dbHelper = dbHelper;
     }
 
-    public int insertAllOrIgnore(List<Article> articles) {
+    public List<Article> insertAllOrIgnore(List<Article> articles) {
         if (articles == null || articles.isEmpty()) {
-            return 0;
+            return new ArrayList<>();
         }
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int insertedCount = 0;
+        List<Article> insertedArticles = new ArrayList<>();
         db.beginTransaction();
         try {
             for (Article article : articles) {
-                if (db.insertWithOnConflict("articles", null,
-                        toContentValues(article), SQLiteDatabase.CONFLICT_IGNORE) != -1) {
-                    insertedCount++;
+                long id = db.insertWithOnConflict("articles", null,
+                        toContentValues(article), SQLiteDatabase.CONFLICT_IGNORE);
+                if (id != -1) {
+                    article.setId(id);
+                    insertedArticles.add(article);
                 }
             }
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
         }
-        return insertedCount;
+        return insertedArticles;
+    }
+
+    public long insertOrIgnore(Article article) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = toContentValues(article);
+        long id = db.insertWithOnConflict("articles", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        if (id == -1) {
+            SyncLog.d("dedup: already have guid=" + article.getGuid());
+        } else {
+            SyncLog.d("insert ok id=" + id + " guid=" + article.getGuid() + " title=" + article.getTitle());
+        }
+        return id;
     }
 
     public void setRead(long articleId, boolean read) {
@@ -87,7 +102,7 @@ public class ArticleDao {
         }
     }
 
-    public List<Article> getArticles(Long feedId, Long tagId, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
+    public List<Article> getArticles(Long feedId, Long tagId, boolean showRead, boolean showUnread, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Article> articles = new ArrayList<>();
 
@@ -103,13 +118,20 @@ public class ArticleDao {
             conditions.add("ft.tag_id = ?");
             args.add(String.valueOf(tagId));
         }
+
         if (feedId != null) {
             conditions.add("a.feed_id = ?");
             args.add(String.valueOf(feedId));
         }
+
+        if (showRead != showUnread) {
+            conditions.add(showRead ? "a.is_read = 1" : "a.is_read = 0");
+        }
+
         if (starredOnly) {
             conditions.add("a.is_starred = 1");
         }
+
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
             conditions.add("(a.title LIKE ? OR a.content LIKE ?)");
             String like = "%" + searchQuery.trim() + "%";
