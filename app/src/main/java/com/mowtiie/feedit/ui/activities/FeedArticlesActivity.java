@@ -4,12 +4,16 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -23,10 +27,16 @@ import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
 
+import java.util.List;
+
 public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapter.Listener {
 
     public static final String EXTRA_FEED_ID = "extra_feed_id";
     public static final String EXTRA_FEED_TITLE = "extra_feed_title";
+
+    private static final long SEARCH_DEBOUNCE_MS = 250L;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSearch;
 
     private ActivityFeedArticlesBinding binding;
     private MainViewModel viewModel;
@@ -54,9 +64,6 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         long feedId = getIntent().getLongExtra(EXTRA_FEED_ID, -1L);
         viewModel.selectFeed(feedId);
 
-        binding.emptyState.textEmptyKaomoji.setText(R.string.empty_state_no_articles_for_feed_kaomoji);
-        binding.emptyState.textEmptyCaption.setText(R.string.empty_state_no_articles_for_feed);
-
         setupBackNavigation();
         setupRecyclerView();
         observeViewModel();
@@ -65,7 +72,7 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     @Override
     protected void onResume() {
         super.onResume();
-        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_MAGAZINE);
+        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD);
         adapter.setLayoutStyle(layoutStyle);
     }
 
@@ -88,17 +95,114 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     private void observeViewModel() {
         viewModel.getArticleUiStates().observe(this, items -> {
             adapter.submitList(items);
-            binding.emptyState.getRoot().setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+            updateEmptyState(items);
         });
+    }
+
+    private void updateEmptyState(List<ArticleUiState> items) {
+        if (!items.isEmpty()) {
+            binding.emptyState.getRoot().setVisibility(View.GONE);
+            return;
+        }
+
+        binding.emptyState.getRoot().setVisibility(View.VISIBLE);
+
+        String query = viewModel.getSearchQuery();
+        int kaomojiRes;
+        int captionRes;
+        if (query != null && !query.trim().isEmpty()) {
+            kaomojiRes = R.string.empty_state_no_results_kaomoji;
+            captionRes = R.string.empty_state_no_results;
+        } else if (!viewModel.isShowRead() && viewModel.isShowUnread()) {
+            kaomojiRes = R.string.empty_state_all_caught_up_kaomoji;
+            captionRes = R.string.empty_state_all_caught_up;
+        } else {
+            kaomojiRes = R.string.empty_state_no_articles_for_feed_kaomoji;
+            captionRes = R.string.empty_state_no_articles_for_feed;
+        }
+        binding.emptyState.textEmptyKaomoji.setText(kaomojiRes);
+        binding.emptyState.textEmptyCaption.setText(captionRes);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_feed_articles, menu);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                cancelPendingSearch();
+                viewModel.setSearchQuery(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                scheduleSearch(newText);
+                return true;
+            }
+        });
+        return true;
+    }
+
+    private void scheduleSearch(String query) {
+        cancelPendingSearch();
+        pendingSearch = () -> viewModel.setSearchQuery(query);
+        searchHandler.postDelayed(pendingSearch, SEARCH_DEBOUNCE_MS);
+    }
+
+    private void cancelPendingSearch() {
+        if (pendingSearch != null) {
+            searchHandler.removeCallbacks(pendingSearch);
+            pendingSearch = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        cancelPendingSearch();
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem readItem = menu.findItem(R.id.filter_show_read);
+        if (readItem != null) {
+            readItem.setChecked(viewModel.isShowRead());
+        }
+        MenuItem unreadItem = menu.findItem(R.id.filter_show_unread);
+        if (unreadItem != null) {
+            unreadItem.setChecked(viewModel.isShowUnread());
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             finish();
             return true;
+        } else if (id == R.id.filter_show_read || id == R.id.filter_show_unread) {
+            return handleReadStateFilterClick(item);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean handleReadStateFilterClick(MenuItem item) {
+        boolean newChecked = !item.isChecked();
+        boolean otherIsRead = item.getItemId() == R.id.filter_show_unread;
+        boolean otherChecked = otherIsRead ? viewModel.isShowRead() : viewModel.isShowUnread();
+
+        if (!newChecked && !otherChecked) {
+            return true;
+        }
+
+        item.setChecked(newChecked);
+        boolean showRead = item.getItemId() == R.id.filter_show_read ? newChecked : viewModel.isShowRead();
+        boolean showUnread = item.getItemId() == R.id.filter_show_unread ? newChecked : viewModel.isShowUnread();
+        viewModel.setReadStateFilter(showRead, showUnread);
+        return true;
     }
 
     @Override
