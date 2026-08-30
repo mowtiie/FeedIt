@@ -62,7 +62,7 @@ public class SettingsViewModel extends AndroidViewModel {
         startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
         contrastLevel.setValue(prefs.getString(PrefsKeys.CONTRAST_LEVEL, PrefsKeys.CONTRAST_STANDARD));
         dynamicColorsEnabled.setValue(prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false));
-        articleLayoutStyle.setValue(prefs.getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_MAGAZINE));
+        articleLayoutStyle.setValue(prefs.getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD));
     }
 
     public LiveData<Boolean> getWifiOnly() {
@@ -182,6 +182,7 @@ public class SettingsViewModel extends AndroidViewModel {
         });
     }
 
+
     public void importOpml(Uri sourceUri) {
         opmlBusy.setValue(true);
         ioExecutor.execute(() -> {
@@ -222,15 +223,14 @@ public class SettingsViewModel extends AndroidViewModel {
                     feed.setTitle(entry.getTitle());
                     feed.setSiteUrl(entry.getSiteUrl());
                     feed.setCreatedAt(System.currentTimeMillis());
-                    feed.setNotifyNew(false);
-                    feed.setOpenMode(Feed.OPEN_MODE_IN_APP);
+                    feed.setNotifyNew(true);
+                    feed.setOpenMode(Feed.OPEN_MODE_BROWSER);
 
                     try {
                         long feedId = feedDao.insertFeed(feed);
                         feedDao.setTagsForFeed(feedId, tagIds);
                         imported++;
-                    } catch (SQLiteConstraintException alreadySubscribed) {
-                        // Same feed URL already exists — skip it rather than duplicate.
+                    } catch (SQLiteConstraintException ignored) {
                     }
                 }
 
