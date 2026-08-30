@@ -30,16 +30,11 @@ public final class NotificationHelper {
     }
 
     public static void ensureChannel(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    context.getString(R.string.notification_channel_name),
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription(context.getString(R.string.notification_channel_description));
-            NotificationManager manager = context.getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(context.getString(R.string.notification_channel_description));
+        NotificationManager manager = context.getSystemService(NotificationManager.class);
+        if (manager != null) {
+            manager.createNotificationChannel(channel);
         }
     }
 
@@ -94,7 +89,7 @@ public final class NotificationHelper {
     private static NotificationCompat.Builder buildSummaryNotification(Context context, int totalNew) {
         String body = context.getResources().getQuantityString(R.plurals.new_articles_count, totalNew, totalNew);
         return new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(R.drawable.ic_stat_feedit)
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentText(body)
                 .setStyle(new NotificationCompat.InboxStyle().setSummaryText(body))
