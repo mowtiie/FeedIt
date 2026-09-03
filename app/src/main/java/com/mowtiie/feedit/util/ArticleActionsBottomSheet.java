@@ -42,10 +42,10 @@ public final class ArticleActionsBottomSheet {
         ImageView iconStarState = sheetView.findViewById(R.id.icon_star_state);
         MaterialTextView textStarState = sheetView.findViewById(R.id.text_star_state);
         if (article.isStarred()) {
-            iconStarState.setImageResource(android.R.drawable.btn_star_big_on);
+            iconStarState.setImageResource(R.drawable.ic_star_filled);
             textStarState.setText(R.string.action_unstar);
         } else {
-            iconStarState.setImageResource(android.R.drawable.btn_star_big_off);
+            iconStarState.setImageResource(R.drawable.ic_star_outlined);
             textStarState.setText(R.string.action_star);
         }
         sheetView.findViewById(R.id.row_star_state).setOnClickListener(v -> {
