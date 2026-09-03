@@ -2,6 +2,8 @@ package com.mowtiie.feedit.parser;
 
 import android.util.Xml;
 
+import androidx.core.text.HtmlCompat;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -16,18 +18,16 @@ public class FeedParser {
     private static final String NS_CONTENT = "http://purl.org/rss/1.0/modules/content/";
     private static final String NS_ATOM = "http://www.w3.org/2005/Atom";
 
-    private static final int MAX_ARTICLES = 15;
-
-    private static final Pattern FIRST_IMG = Pattern.compile(
-            "<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+    private static final Pattern FIRST_IMG = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
 
     public ParsedFeedMeta parse(InputStream input) throws XmlPullParserException, IOException {
         XmlPullParser parser = Xml.newPullParser();
         parser.setInput(input, null);
 
-        do {
+        parser.next();
+        while (parser.getEventType() != XmlPullParser.START_TAG) {
             parser.next();
-        } while (parser.getEventType() != XmlPullParser.START_TAG);
+        }
 
         String rootName = parser.getName();
         if ("rss".equalsIgnoreCase(rootName)) {
@@ -39,14 +39,12 @@ public class FeedParser {
         }
     }
 
+
     private ParsedFeedMeta parseRss(XmlPullParser parser) throws XmlPullParserException, IOException {
         ParsedFeedMeta meta = new ParsedFeedMeta();
         int depth = 1;
         while (depth != 0) {
             int event = parser.next();
-            if (event == XmlPullParser.END_DOCUMENT) {
-                break;
-            }
             if (event == XmlPullParser.END_TAG) {
                 depth--;
                 continue;
@@ -56,25 +54,17 @@ public class FeedParser {
             }
             depth++;
             String name = parser.getName();
-            if ("channel".equals(name)) {
-                depth--;
-            } else if ("title".equals(name) && meta.getTitle() == null) {
-                meta.setTitle(readText(parser));
-                depth--;
+            if ("title".equals(name) && meta.getTitle() == null) {
+                meta.setTitle(decodePlainTextEntities(readText(parser)));
             } else if ("link".equals(name) && meta.getSiteUrl() == null) {
                 meta.setSiteUrl(readText(parser));
-                depth--;
             } else if ("description".equals(name) && meta.getDescription() == null) {
                 meta.setDescription(readText(parser));
-                depth--;
             } else if ("image".equals(name)) {
                 meta.setImageUrl(readChannelImageUrl(parser));
                 depth--;
             } else if ("item".equals(name)) {
-                ParsedArticle item = parseRssItem(parser);
-                if (meta.getArticles().size() < MAX_ARTICLES) {
-                    meta.getArticles().add(item);
-                }
+                meta.getArticles().add(parseRssItem(parser));
                 depth--;
             } else {
                 skip(parser);
@@ -89,9 +79,6 @@ public class FeedParser {
         int depth = 1;
         while (depth != 0) {
             int event = parser.next();
-            if (event == XmlPullParser.END_DOCUMENT) {
-                break;
-            }
             if (event == XmlPullParser.END_TAG) {
                 depth--;
                 continue;
@@ -102,10 +89,11 @@ public class FeedParser {
             depth++;
             if ("url".equals(parser.getName())) {
                 url = readText(parser);
+                depth--;
             } else {
                 skip(parser);
+                depth--;
             }
-            depth--;
         }
         return url;
     }
@@ -118,9 +106,6 @@ public class FeedParser {
         int depth = 1;
         while (depth != 0) {
             int event = parser.next();
-            if (event == XmlPullParser.END_DOCUMENT) {
-                break;
-            }
             if (event == XmlPullParser.END_TAG) {
                 depth--;
                 continue;
@@ -133,26 +118,19 @@ public class FeedParser {
             String namespace = parser.getNamespace();
 
             if ("title".equals(name)) {
-                article.setTitle(readText(parser));
-                depth--;
+                article.setTitle(decodePlainTextEntities(readText(parser)));
             } else if ("link".equals(name)) {
                 article.setLink(readText(parser));
-                depth--;
             } else if ("guid".equals(name)) {
                 article.setGuid(readText(parser));
-                depth--;
             } else if ("author".equals(name) || "creator".equals(name)) {
                 article.setAuthor(readText(parser));
-                depth--;
             } else if ("description".equals(name)) {
                 article.setSummary(readText(parser));
-                depth--;
             } else if ("encoded".equals(name) && NS_CONTENT.equals(namespace)) {
                 article.setContent(readText(parser));
-                depth--;
             } else if ("pubDate".equals(name)) {
                 article.setPublishedAt(DateUtils.parse(readText(parser)));
-                depth--;
             } else if ("enclosure".equals(name)) {
                 String type = parser.getAttributeValue(null, "type");
                 String url = parser.getAttributeValue(null, "url");
@@ -161,8 +139,6 @@ public class FeedParser {
                 }
                 skip(parser);
                 depth--;
-            } else if ("group".equals(name) && NS_MEDIA.equals(namespace)) {
-                // Do nothing
             } else if (("thumbnail".equals(name) || "content".equals(name)) && NS_MEDIA.equals(namespace)) {
                 String url = parser.getAttributeValue(null, "url");
                 String medium = parser.getAttributeValue(null, "medium");
@@ -190,9 +166,6 @@ public class FeedParser {
         int depth = 1;
         while (depth != 0) {
             int event = parser.next();
-            if (event == XmlPullParser.END_DOCUMENT) {
-                break;
-            }
             if (event == XmlPullParser.END_TAG) {
                 depth--;
                 continue;
@@ -203,18 +176,16 @@ public class FeedParser {
             depth++;
             String name = parser.getName();
             if ("title".equals(name) && meta.getTitle() == null) {
-                meta.setTitle(readText(parser));
-                depth--;
+                meta.setTitle(decodePlainTextEntities(readText(parser)));
             } else if ("subtitle".equals(name) && meta.getDescription() == null) {
                 meta.setDescription(readText(parser));
-                depth--;
             } else if ("logo".equals(name) || "icon".equals(name)) {
                 if (meta.getImageUrl() == null) {
                     meta.setImageUrl(readText(parser));
                 } else {
                     skip(parser);
+                    depth--;
                 }
-                depth--;
             } else if ("link".equals(name)) {
                 String rel = parser.getAttributeValue(null, "rel");
                 String href = parser.getAttributeValue(null, "href");
@@ -224,10 +195,7 @@ public class FeedParser {
                 skip(parser);
                 depth--;
             } else if ("entry".equals(name)) {
-                ParsedArticle entry = parseAtomEntry(parser);
-                if (meta.getArticles().size() < MAX_ARTICLES) {
-                    meta.getArticles().add(entry);
-                }
+                meta.getArticles().add(parseAtomEntry(parser));
                 depth--;
             } else {
                 skip(parser);
@@ -245,9 +213,6 @@ public class FeedParser {
         int depth = 1;
         while (depth != 0) {
             int event = parser.next();
-            if (event == XmlPullParser.END_DOCUMENT) {
-                break;
-            }
             if (event == XmlPullParser.END_TAG) {
                 depth--;
                 continue;
@@ -260,11 +225,9 @@ public class FeedParser {
             String namespace = parser.getNamespace();
 
             if ("title".equals(name)) {
-                article.setTitle(readText(parser));
-                depth--;
+                article.setTitle(decodePlainTextEntities(readText(parser)));
             } else if ("id".equals(name)) {
                 article.setGuid(readText(parser));
-                depth--;
             } else if ("link".equals(name)) {
                 String rel = parser.getAttributeValue(null, "rel");
                 String type = parser.getAttributeValue(null, "type");
@@ -281,30 +244,20 @@ public class FeedParser {
                     article.setAuthor(readText(parser));
                 } else {
                     skip(parser);
+                    depth--;
                 }
-                depth--;
             } else if ("summary".equals(name)) {
                 article.setSummary(readText(parser));
-                depth--;
             } else if ("content".equals(name) && NS_ATOM.equals(namespace)) {
                 article.setContent(readText(parser));
-                depth--;
             } else if ("published".equals(name) || "updated".equals(name)) {
                 Long parsed = DateUtils.parse(readText(parser));
-                depth--;
                 if (article.getPublishedAt() == null || "published".equals(name)) {
                     article.setPublishedAt(parsed);
                 }
-            } else if ("group".equals(name) && NS_MEDIA.equals(namespace)) {
-                // Do nothing
             } else if (("thumbnail".equals(name) || "content".equals(name)) && NS_MEDIA.equals(namespace)) {
                 String url = parser.getAttributeValue(null, "url");
-                String medium = parser.getAttributeValue(null, "medium");
-                String type = parser.getAttributeValue(null, "type");
-                boolean isImage = "thumbnail".equals(name)
-                        || "image".equals(medium)
-                        || (type != null && type.startsWith("image/"));
-                if (url != null && isImage && (mediaImageUrl == null || "thumbnail".equals(name))) {
+                if (mediaImageUrl == null && url != null) {
                     mediaImageUrl = url;
                 }
                 skip(parser);
@@ -343,18 +296,19 @@ public class FeedParser {
     }
 
     private String readText(XmlPullParser parser) throws XmlPullParserException, IOException {
-        StringBuilder sb = new StringBuilder();
-        while (true) {
-            int event = parser.next();
-            if (event == XmlPullParser.TEXT) {
-                sb.append(parser.getText());
-            } else if (event == XmlPullParser.START_TAG) {
-                skip(parser);
-            } else {
-                break;
-            }
+        String result = "";
+        if (parser.next() == XmlPullParser.TEXT) {
+            result = parser.getText();
+            parser.nextTag();
         }
-        return sb.toString();
+        return result;
+    }
+
+    private static String decodePlainTextEntities(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT).toString().trim();
     }
 
     private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
