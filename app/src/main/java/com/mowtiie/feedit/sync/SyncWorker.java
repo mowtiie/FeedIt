@@ -20,6 +20,7 @@ import com.mowtiie.feedit.parser.ParsedFeedMeta;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -28,6 +29,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class SyncWorker extends Worker {
+
+    public static final String KEY_FEED_ID = "feed_id";
 
     private static final int OUTCOME_NOT_MODIFIED = -2;
     private static final int OUTCOME_FETCH_FAILED = -1;
@@ -60,7 +63,14 @@ public class SyncWorker extends Worker {
         FeedFetcher fetcher = new FeedFetcher();
         FeedParser parser = new FeedParser();
 
-        List<Feed> feeds = feedDao.getAllFeeds();
+        long scopedFeedId = getInputData().getLong(KEY_FEED_ID, -1L);
+        List<Feed> feeds;
+        if (scopedFeedId != -1L) {
+            Feed single = feedDao.getFeedById(scopedFeedId);
+            feeds = single != null ? Collections.singletonList(single) : new ArrayList<>();
+        } else {
+            feeds = feedDao.getAllFeeds();
+        }
         if (feeds.isEmpty()) {
             SyncLog.d("=== sync run START — no feeds, nothing to do ===");
             return Result.success();

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.work.Constraints;
+import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
@@ -19,6 +20,7 @@ public final class SyncScheduler {
 
     private static final String PERIODIC_WORK_NAME = "feedit_periodic_sync";
     public static final String MANUAL_SYNC_WORK_NAME = "feedit_manual_sync";
+    private static final String FEED_SYNC_WORK_NAME_PREFIX = "feedit_feed_sync_";
 
     private static final String PREFS_NAME = "feedit_prefs";
     private static final String KEY_SYNC_WIFI_ONLY = "sync_wifi_only";
@@ -47,7 +49,24 @@ public final class SyncScheduler {
                         .build())
                 .build();
 
-        WorkManager.getInstance(context).enqueueUniqueWork(MANUAL_SYNC_WORK_NAME, ExistingWorkPolicy.REPLACE, request);
+        WorkManager.getInstance(context)
+                .enqueueUniqueWork(MANUAL_SYNC_WORK_NAME, ExistingWorkPolicy.REPLACE, request);
+    }
+
+    public static void triggerFeedSync(Context context, long feedId) {
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SyncWorker.class)
+                .setInputData(new Data.Builder().putLong(SyncWorker.KEY_FEED_ID, feedId).build())
+                .setConstraints(new Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build())
+                .build();
+
+        WorkManager.getInstance(context)
+                .enqueueUniqueWork(feedSyncWorkName(feedId), ExistingWorkPolicy.REPLACE, request);
+    }
+
+    public static String feedSyncWorkName(long feedId) {
+        return FEED_SYNC_WORK_NAME_PREFIX + feedId;
     }
 
     private static Constraints buildConstraints(Context context) {

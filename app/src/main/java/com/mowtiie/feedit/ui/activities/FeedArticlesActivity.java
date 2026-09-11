@@ -16,10 +16,14 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.databinding.ActivityFeedArticlesBinding;
 import com.mowtiie.feedit.model.Feed;
+import com.mowtiie.feedit.sync.SyncLog;
+import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleActionsBottomSheet;
@@ -37,6 +41,9 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     private static final long SEARCH_DEBOUNCE_MS = 250L;
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable pendingSearch;
+
+    private long feedId;
+    private boolean feedSyncWasRunning;
 
     private ActivityFeedArticlesBinding binding;
     private MainViewModel viewModel;
@@ -61,8 +68,44 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
 
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
-        long feedId = getIntent().getLongExtra(EXTRA_FEED_ID, -1L);
+        feedId = getIntent().getLongExtra(EXTRA_FEED_ID, -1L);
         viewModel.selectFeed(feedId);
+
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            SyncLog.d("feed refresh triggered by pull-to-refresh, feedId=" + feedId);
+            feedSyncWasRunning = true;
+            SyncScheduler.triggerFeedSync(this, feedId);
+        });
+
+        WorkManager.getInstance(this)
+                .getWorkInfosForUniqueWorkLiveData(SyncScheduler.feedSyncWorkName(feedId))
+                .observe(this, workInfos -> {
+                    if (workInfos == null || workInfos.isEmpty()) {
+                        return;
+                    }
+
+                    boolean anyRunning = false;
+                    for (WorkInfo info : workInfos) {
+                        WorkInfo.State state = info.getState();
+                        if (state == WorkInfo.State.ENQUEUED
+                                || state == WorkInfo.State.RUNNING
+                                || state == WorkInfo.State.BLOCKED) {
+                            anyRunning = true;
+                        }
+                    }
+
+                    if (anyRunning) {
+                        feedSyncWasRunning = true;
+                        return;
+                    }
+
+                    if (feedSyncWasRunning) {
+                        feedSyncWasRunning = false;
+                        SyncLog.d("feed sync finished, feedId=" + feedId + " -> stopping spinner, refreshing list");
+                        binding.swipeRefresh.setRefreshing(false);
+                        viewModel.refresh();
+                    }
+                });
 
         setupBackNavigation();
         setupRecyclerView();
@@ -104,7 +147,6 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
             binding.emptyState.getRoot().setVisibility(View.GONE);
             return;
         }
-
         binding.emptyState.getRoot().setVisibility(View.VISIBLE);
 
         String query = viewModel.getSearchQuery();
