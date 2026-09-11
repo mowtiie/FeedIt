@@ -67,7 +67,8 @@ public class SyncWorker extends Worker {
         }
 
         int threadCount = Math.min(MAX_CONCURRENT_FEEDS, feeds.size());
-        SyncLog.d("=== sync run START — " + feeds.size() + " feeds, " + threadCount + " at a time ===");
+        SyncLog.d("=== sync run START — " + feeds.size() + " feeds, "
+                + threadCount + " at a time ===");
 
         ExecutorService pool = Executors.newFixedThreadPool(threadCount);
         List<FeedSyncResult> notifyResults = new ArrayList<>();
@@ -206,7 +207,7 @@ public class SyncWorker extends Worker {
                 + " in " + (System.currentTimeMillis() - insertStart) + "ms");
 
         if (!newArticles.isEmpty() && feed.isNotifyNew()) {
-            notifyResults.add(new FeedSyncResult(feed.getId(), feed.getTitle(), newArticles));
+            notifyResults.add(new FeedSyncResult(feed.getId(), feed.getTitle(), feed.getOpenMode(), newArticles));
         }
         return newArticles.size();
     }

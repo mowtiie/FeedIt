@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">FeedIt</string>
 
-    <string name="nav_section_articles">Articles</string>
+    <string name="nav_section_articles">Article</string>
     <string name="nav_all">All</string>
     <string name="nav_starred">Starred</string>
     <string name="nav_section_manage">Manage</string>
@@ -16,14 +16,14 @@
     <string name="action_filter">Filter</string>
     <string name="action_mark_all_read">Mark all read</string>
 
-    <string name="hint_search_feeds">Search feeds</string>
-    <string name="hint_search_articles">Search articles</string>
-
     <string name="sort_dialog_title">Sort by</string>
     <string name="sort_newest">Newest first</string>
     <string name="sort_oldest">Oldest first</string>
     <string name="sort_unread_first">Unread first</string>
     <string name="sort_by_feed">By feed</string>
+
+    <string name="hint_search_feeds">Search feeds</string>
+    <string name="hint_search_articles">Search articles</string>
 
     <string name="title_feed_notifications">Feed Notifications</string>
     <string name="label_feed_notifications_title">Manage feed notifications</string>
@@ -49,6 +49,7 @@
     <string name="action_star">Star</string>
     <string name="action_unstar">Unstar</string>
     <string name="action_mark_read">Mark read</string>
+    <string name="notification_action_open">Open</string>
     <string name="action_mark_unread">Mark unread</string>
     <string name="action_share">Share</string>
     <string name="action_open_browser">Open in browser</string>

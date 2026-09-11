@@ -15,7 +15,6 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.model.Article;
-import com.mowtiie.feedit.ui.activities.ArticleDetailActivity;
 import com.mowtiie.feedit.util.PrefsKeys;
 
 import java.util.List;
@@ -30,11 +29,16 @@ public final class NotificationHelper {
     }
 
     public static void ensureChannel(Context context) {
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_DEFAULT);
-        channel.setDescription(context.getString(R.string.notification_channel_description));
-        NotificationManager manager = context.getSystemService(NotificationManager.class);
-        if (manager != null) {
-            manager.createNotificationChannel(channel);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    context.getString(R.string.notification_channel_name),
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(context.getString(R.string.notification_channel_description));
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
         }
     }
 
@@ -69,10 +73,25 @@ public final class NotificationHelper {
     }
 
     private static NotificationCompat.Builder buildArticleNotification(Context context, FeedSyncResult result, Article article) {
-        Intent intent = new Intent(context, ArticleDetailActivity.class);
-        intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_ID, article.getId());
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) article.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        int articleIdInt = (int) article.getId();
+        int markReadRequestCode = articleIdInt * 2;
+        int openRequestCode = articleIdInt * 2 + 1;
+
+        Intent markReadIntent = new Intent(context, NotificationActionReceiver.class);
+        markReadIntent.setAction(NotificationActionReceiver.ACTION_MARK_READ);
+        markReadIntent.putExtra(NotificationActionReceiver.EXTRA_ARTICLE_ID, article.getId());
+        markReadIntent.putExtra(NotificationActionReceiver.EXTRA_NOTIFICATION_ID, articleIdInt);
+        PendingIntent markReadPendingIntent = PendingIntent.getBroadcast(
+                context, markReadRequestCode, markReadIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Intent openIntent = new Intent(context, NotificationActionReceiver.class);
+        openIntent.setAction(NotificationActionReceiver.ACTION_OPEN);
+        openIntent.putExtra(NotificationActionReceiver.EXTRA_ARTICLE_ID, article.getId());
+        openIntent.putExtra(NotificationActionReceiver.EXTRA_ARTICLE_LINK, article.getLink());
+        openIntent.putExtra(NotificationActionReceiver.EXTRA_OPEN_MODE, result.getOpenMode());
+        openIntent.putExtra(NotificationActionReceiver.EXTRA_NOTIFICATION_ID, articleIdInt);
+        PendingIntent openPendingIntent = PendingIntent.getBroadcast(context, openRequestCode, openIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         String title = result.getFeedTitle() != null ? result.getFeedTitle() : context.getString(R.string.app_name);
 
@@ -82,7 +101,9 @@ public final class NotificationHelper {
                 .setContentText(article.getTitle())
                 .setGroup(GROUP_KEY)
                 .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
+                .setContentIntent(openPendingIntent)
+                .addAction(R.drawable.ic_action_mark_read, context.getString(R.string.action_mark_read), markReadPendingIntent)
+                .addAction(R.drawable.ic_action_open, context.getString(R.string.notification_action_open), openPendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
     }
 
