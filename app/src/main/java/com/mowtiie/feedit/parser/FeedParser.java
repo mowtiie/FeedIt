@@ -17,12 +17,20 @@ public class FeedParser {
     private static final String NS_MEDIA = "http://search.yahoo.com/mrss/";
     private static final String NS_CONTENT = "http://purl.org/rss/1.0/modules/content/";
     private static final String NS_ATOM = "http://www.w3.org/2005/Atom";
+    private static final String NS_RSS1 = "http://purl.org/rss/1.0/";
+    private static final String NS_RSS2_USERLAND = "http://backend.userland.com/rss2";
+    private static final String NS_DC = "http://purl.org/dc/elements/1.1/";
+    private static final int FALLBACK_TITLE_LENGTH = 90;
 
     private static final Pattern FIRST_IMG = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
 
     public ParsedFeedMeta parse(InputStream input) throws XmlPullParserException, IOException {
+        byte[] body = readAll(input);
+        if (looksLikeJson(body)) {
+            return JsonFeedParser.parse(new String(body, java.nio.charset.StandardCharsets.UTF_8));
+        }
         XmlPullParser parser = Xml.newPullParser();
-        parser.setInput(input, null);
+        parser.setInput(new java.io.ByteArrayInputStream(body), null);
 
         int event = nextEvent(parser);
         while (event != XmlPullParser.START_TAG) {
@@ -30,13 +38,57 @@ public class FeedParser {
         }
 
         String rootName = parser.getName();
-        if ("rss".equalsIgnoreCase(rootName)) {
+        if ("rss".equalsIgnoreCase(rootName) || "RDF".equalsIgnoreCase(rootName)) {
             return parseRss(parser);
         } else if ("feed".equalsIgnoreCase(rootName)) {
             return parseAtom(parser);
         } else {
             throw new XmlPullParserException("Unrecognized feed root element: " + rootName);
         }
+    }
+
+    private static byte[] readAll(InputStream input) throws IOException {
+        java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+        byte[] chunk = new byte[8192];
+        int read;
+        while ((read = input.read(chunk)) != -1) {
+            buffer.write(chunk, 0, read);
+        }
+        return buffer.toByteArray();
+    }
+
+    static boolean looksLikeJson(byte[] body) {
+        int i = 0;
+        if (body.length >= 3 && (body[0] & 0xFF) == 0xEF && (body[1] & 0xFF) == 0xBB && (body[2] & 0xFF) == 0xBF) {
+            i = 3;
+        }
+        while (i < body.length && Character.isWhitespace(body[i])) {
+            i++;
+        }
+        return i < body.length && body[i] == '{';
+    }
+
+    /** RSS elements are unqualified (RSS 2.0) or in the RSS 1.0 namespace; this excludes media:/itunes:/atom: lookalikes. */
+    private static boolean isRssElement(String namespace) {
+        return namespace == null || namespace.isEmpty()
+                || NS_RSS1.equals(namespace) || NS_RSS2_USERLAND.equals(namespace);
+    }
+
+    /** Gives title-less items (microblog posts) a readable title taken from their text. */
+    static ParsedArticle withFallbackTitle(ParsedArticle article) {
+        String title = article.getTitle();
+        if (title != null && !title.trim().isEmpty()) {
+            return article;
+        }
+        String source = article.getSummary() != null && !article.getSummary().trim().isEmpty()
+                ? article.getSummary() : article.getContent();
+        String plain = source == null ? "" : HtmlCompat.fromHtml(source, HtmlCompat.FROM_HTML_MODE_COMPACT)
+                .toString().replaceAll("\\s+", " ").trim();
+        if (plain.length() > FALLBACK_TITLE_LENGTH) {
+            plain = plain.substring(0, FALLBACK_TITLE_LENGTH).trim() + "\u2026";
+        }
+        article.setTitle(!plain.isEmpty() ? plain : article.getLink());
+        return article;
     }
 
     private ParsedFeedMeta parseRss(XmlPullParser parser) throws XmlPullParserException, IOException {
@@ -53,22 +105,27 @@ public class FeedParser {
             }
             depth++;
             String name = parser.getName();
+            boolean rssElement = isRssElement(parser.getNamespace());
             if ("channel".equals(name)) {
-                depth--;
-            } else if ("title".equals(name) && meta.getTitle() == null) {
+                // Descend: RSS 2.0 nests items inside the channel, RSS 1.0 (RDF) lists them after it.
+                continue;
+            } else if ("title".equals(name) && rssElement && meta.getTitle() == null) {
                 meta.setTitle(decodePlainTextEntities(readText(parser)));
                 depth--;
-            } else if ("link".equals(name) && meta.getSiteUrl() == null) {
-                meta.setSiteUrl(readText(parser));
+            } else if ("link".equals(name) && rssElement) {
+                String link = readText(parser).trim();
+                if (meta.getSiteUrl() == null && !link.isEmpty()) {
+                    meta.setSiteUrl(link);
+                }
                 depth--;
-            } else if ("description".equals(name) && meta.getDescription() == null) {
+            } else if ("description".equals(name) && rssElement && meta.getDescription() == null) {
                 meta.setDescription(readText(parser));
                 depth--;
             } else if ("image".equals(name)) {
                 meta.setImageUrl(readChannelImageUrl(parser));
                 depth--;
             } else if ("item".equals(name)) {
-                meta.getArticles().add(parseRssItem(parser));
+                meta.getArticles().add(withFallbackTitle(parseRssItem(parser)));
                 depth--;
             } else {
                 skip(parser);
@@ -106,6 +163,7 @@ public class FeedParser {
         ParsedArticle article = new ParsedArticle();
         String enclosureImageUrl = null;
         String mediaImageUrl = null;
+        String atomLinkFallback = null;
 
         int depth = 1;
         while (depth != 0) {
@@ -121,26 +179,43 @@ public class FeedParser {
             String name = parser.getName();
             String namespace = parser.getNamespace();
 
-            if ("title".equals(name)) {
+            boolean rssElement = isRssElement(namespace);
+
+            if ("title".equals(name) && rssElement) {
                 article.setTitle(decodePlainTextEntities(readText(parser)));
                 depth--;
-            } else if ("link".equals(name)) {
-                article.setLink(readText(parser));
+            } else if ("link".equals(name) && rssElement) {
+                String link = readText(parser).trim();
+                if (!link.isEmpty()) {
+                    article.setLink(link);
+                }
                 depth--;
-            } else if ("guid".equals(name)) {
+            } else if ("link".equals(name) && NS_ATOM.equals(namespace)) {
+                // Some feeds (NYT) repeat the link as an empty <atom:link href=.../>; only use it as a fallback.
+                String rel = parser.getAttributeValue(null, "rel");
+                String href = parser.getAttributeValue(null, "href");
+                if (atomLinkFallback == null && href != null && (rel == null || "alternate".equals(rel) || "standout".equals(rel))) {
+                    atomLinkFallback = href;
+                }
+                skip(parser);
+                depth--;
+            } else if ("guid".equals(name) && rssElement) {
                 article.setGuid(readText(parser));
                 depth--;
-            } else if ("author".equals(name) || "creator".equals(name)) {
+            } else if (("author".equals(name) && rssElement) || ("creator".equals(name) && NS_DC.equals(namespace))) {
                 article.setAuthor(readText(parser));
                 depth--;
-            } else if ("description".equals(name)) {
+            } else if ("description".equals(name) && rssElement) {
                 article.setSummary(readText(parser));
                 depth--;
             } else if ("encoded".equals(name) && NS_CONTENT.equals(namespace)) {
                 article.setContent(readText(parser));
                 depth--;
-            } else if ("pubDate".equals(name)) {
-                article.setPublishedAt(DateUtils.parse(readText(parser)));
+            } else if (("pubDate".equals(name) && rssElement) || ("date".equals(name) && NS_DC.equals(namespace))) {
+                Long parsed = DateUtils.parse(readText(parser));
+                if (parsed != null || article.getPublishedAt() == null) {
+                    article.setPublishedAt(parsed);
+                }
                 depth--;
             } else if ("enclosure".equals(name)) {
                 String type = parser.getAttributeValue(null, "type");
@@ -168,6 +243,9 @@ public class FeedParser {
             }
         }
 
+        if ((article.getLink() == null || article.getLink().isEmpty()) && atomLinkFallback != null) {
+            article.setLink(atomLinkFallback);
+        }
         article.setImageUrl(resolveArticleImage(mediaImageUrl, enclosureImageUrl, article.getContent(), article.getSummary()));
         return article;
     }
@@ -209,7 +287,7 @@ public class FeedParser {
                 skip(parser);
                 depth--;
             } else if ("entry".equals(name)) {
-                meta.getArticles().add(parseAtomEntry(parser));
+                meta.getArticles().add(withFallbackTitle(parseAtomEntry(parser)));
                 depth--;
             } else {
                 skip(parser);
@@ -337,7 +415,7 @@ public class FeedParser {
         return extractFirstImage(summary);
     }
 
-    private String extractFirstImage(String html) {
+    static String extractFirstImage(String html) {
         if (html == null) {
             return null;
         }
@@ -360,6 +438,10 @@ public class FeedParser {
             throw new XmlPullParserException("Unexpected end of document while parsing feed (truncated or malformed XML)");
         }
         return event;
+    }
+
+    static String decodePlainText(String text) {
+        return decodePlainTextEntities(text);
     }
 
     private static String decodePlainTextEntities(String text) {

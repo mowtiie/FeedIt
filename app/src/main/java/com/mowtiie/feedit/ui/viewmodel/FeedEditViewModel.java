@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.data.RepositoryCallback;
 import com.mowtiie.feedit.model.Article;
@@ -198,9 +199,18 @@ public class FeedEditViewModel extends AndroidViewModel {
 
                 persistFeed(feed, meta);
             } catch (Exception e) {
-                postError("Couldn't read that feed: " + e.getMessage());
+                postError(describeReadError(e));
             }
         });
+    }
+
+    private String describeReadError(Exception e) {
+        String message = e.getMessage();
+        if (e instanceof org.xmlpull.v1.XmlPullParserException
+                && message != null && message.startsWith("Unrecognized feed root element")) {
+            return getApplication().getString(R.string.error_not_a_feed);
+        }
+        return "Couldn't read that feed: " + message;
     }
 
     private String resolveFeedUrl(String input) {
