@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -29,5 +30,24 @@
         android:textAppearance="?attr/textAppearanceTitleSmall"
         android:textColor="?attr/colorOnSurfaceVariant"
         tools:text="No articles yet. Add a feed to get started." />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_empty_add_feed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/title_add_feed"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add"
+        tools:visibility="visible" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_empty_import"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_import_opml"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
 </LinearLayout>

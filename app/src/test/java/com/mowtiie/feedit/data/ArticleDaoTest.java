@@ -133,6 +133,21 @@ public class ArticleDaoTest {
     }
 
     @Test
+    public void unreadCountsByFeed_countsOnlyUnreadPerFeed() {
+        List<Article> inserted = dao.insertAllOrIgnore(Arrays.asList(
+                article("a", 1L), article("b", 2L), article("c", 3L)));
+        dao.setRead(inserted.get(0).getId(), true);
+
+        java.util.Map<Long, Integer> counts = dao.getUnreadCountsByFeed();
+
+        assertEquals(1, counts.size());
+        assertEquals(Integer.valueOf(2), counts.get(feedId));
+
+        dao.setReadForIds(Arrays.asList(inserted.get(1).getId(), inserted.get(2).getId()), true);
+        assertTrue(dao.getUnreadCountsByFeed().isEmpty());
+    }
+
+    @Test
     public void insertAllOrIgnore_skipsDuplicateGuids() {
         dao.insertAllOrIgnore(Collections.singletonList(article("a", 1L)));
 

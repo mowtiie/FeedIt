@@ -18,8 +18,17 @@ public class Feed {
     private boolean notifyNew;
     private int openMode;
     private long createdAt;
+    private String lastError;
 
     public Feed() {
+    }
+
+    public String getLastError() {
+        return lastError;
+    }
+
+    public void setLastError(String lastError) {
+        this.lastError = lastError;
     }
 
     public long getId() {

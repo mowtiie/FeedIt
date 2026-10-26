@@ -15,6 +15,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
@@ -26,6 +27,7 @@ import com.mowtiie.feedit.sync.SyncLog;
 import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
+import com.mowtiie.feedit.util.ArticleSwipeCallback;
 import com.mowtiie.feedit.util.ArticleActionsBottomSheet;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
@@ -133,6 +135,17 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         adapter = new ArticleAdapter(this);
         binding.recyclerArticles.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerArticles.setAdapter(adapter);
+        new ItemTouchHelper(new ArticleSwipeCallback(this, adapter, new ArticleSwipeCallback.Actions() {
+            @Override
+            public void onSwipeToggleRead(ArticleUiState item) {
+                viewModel.toggleRead(item.getArticle());
+            }
+
+            @Override
+            public void onSwipeToggleStar(ArticleUiState item) {
+                viewModel.toggleStarred(item.getArticle());
+            }
+        })).attachToRecyclerView(binding.recyclerArticles);
     }
 
     private void observeViewModel() {

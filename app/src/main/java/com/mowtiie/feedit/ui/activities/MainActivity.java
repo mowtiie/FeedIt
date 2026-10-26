@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -22,6 +23,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.work.WorkManager;
 
@@ -32,16 +34,23 @@ import com.mowtiie.feedit.crash.CrashReporter;
 import com.mowtiie.feedit.data.ArticleDao;
 import com.mowtiie.feedit.databinding.ActivityMainBinding;
 import com.mowtiie.feedit.model.Feed;
+import com.mowtiie.feedit.model.FeedTags;
+import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.sync.SyncScheduler;
+import com.mowtiie.feedit.sync.SyncWorker;
 import com.mowtiie.feedit.sync.SyncLog;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleActionsBottomSheet;
+import com.mowtiie.feedit.util.ArticleSwipeCallback;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends FeedItActivity implements ArticleAdapter.Listener {
 
@@ -51,6 +60,14 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     private MainViewModel viewModel;
     private ArticleAdapter adapter;
     private ActionBarDrawerToggle drawerToggle;
+    private SearchView searchView;
+
+    private static final int FEED_ITEM_BASE = 0x10000000;
+    private static final int TAG_ITEM_BASE = 0x20000000;
+    private int selectedNavId = R.id.nav_all;
+    private List<FeedTags> drawerFeeds = Collections.emptyList();
+    private List<Tag> drawerTags = Collections.emptyList();
+    private Map<Long, Integer> unreadCounts = new HashMap<>();
 
     private final ActivityResultLauncher<String> requestNotificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -99,11 +116,10 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         setupSwipeRefresh();
         observeViewModel();
 
-        maybeRequestNotificationPermission();
-
         long openFeedId = getIntent().getLongExtra(EXTRA_OPEN_FEED_ID, -1L);
         if (openFeedId != -1L) {
             viewModel.selectFeed(openFeedId);
+            selectedNavId = FEED_ITEM_BASE + (int) openFeedId;
         } else {
             applyStartupPage();
         }
@@ -126,28 +142,40 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         String startupPage = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE)
                 .getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL);
 
-        int checkedItemId;
         if (PrefsKeys.STARTUP_PAGE_STARRED.equals(startupPage)) {
             viewModel.selectStarred();
             setTitle(R.string.nav_starred);
-            checkedItemId = R.id.nav_starred;
+            selectedNavId = R.id.nav_starred;
             isOnAllScope = false;
         } else {
             viewModel.selectAll();
             setTitle(R.string.app_name);
-            checkedItemId = R.id.nav_all;
+            selectedNavId = R.id.nav_all;
             isOnAllScope = true;
         }
 
-        binding.navView.getMenu().findItem(checkedItemId).setChecked(true);
+        binding.navView.setCheckedItem(selectedNavId);
     }
 
-    private void maybeRequestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
+    private void maybePromptForNotifications() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return;
         }
+        android.content.SharedPreferences prefs = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE);
+        if (prefs.getBoolean(PrefsKeys.NOTIFICATION_PROMPT_SHOWN, false)) {
+            return;
+        }
+        prefs.edit().putBoolean(PrefsKeys.NOTIFICATION_PROMPT_SHOWN, true).apply();
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_notification_title)
+                .setMessage(R.string.dialog_notification_message)
+                .setPositiveButton(R.string.action_allow, (dialog, which) ->
+                        requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS))
+                .setNegativeButton(R.string.action_not_now, null)
+                .show();
     }
 
     private void setupDrawer() {
@@ -203,7 +231,17 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             viewModel.selectStarred();
             setTitle(R.string.nav_starred);
             isOnAllScope = false;
+        } else if (id >= TAG_ITEM_BASE) {
+            viewModel.selectTag(id - TAG_ITEM_BASE);
+            setTitle(item.getTitle());
+            isOnAllScope = true;
+        } else if (id >= FEED_ITEM_BASE) {
+            viewModel.selectFeed(id - FEED_ITEM_BASE);
+            setTitle(item.getTitle());
+            isOnAllScope = true;
         }
+        selectedNavId = id;
+        updateSearchHint();
         invalidateOptionsMenu();
 
         binding.drawerLayout.closeDrawer(GravityCompat.START);
@@ -214,9 +252,25 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         adapter = new ArticleAdapter(this);
         binding.recyclerArticles.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerArticles.setAdapter(adapter);
+        new ItemTouchHelper(new ArticleSwipeCallback(this, adapter, new ArticleSwipeCallback.Actions() {
+            @Override
+            public void onSwipeToggleRead(ArticleUiState item) {
+                viewModel.toggleRead(item.getArticle());
+            }
+
+            @Override
+            public void onSwipeToggleStar(ArticleUiState item) {
+                viewModel.toggleStarred(item.getArticle());
+            }
+        })).attachToRecyclerView(binding.recyclerArticles);
     }
 
     private void setupSwipeRefresh() {
+        binding.emptyState.buttonEmptyAddFeed.setOnClickListener(v ->
+                startActivity(new Intent(this, AddEditFeedActivity.class)));
+        binding.emptyState.buttonEmptyImport.setOnClickListener(v ->
+                startActivity(new Intent(this, SettingsActivity.class)));
+
         binding.swipeRefresh.setOnRefreshListener(() -> {
             SyncLog.d("manual refresh triggered by pull-to-refresh");
             manualSyncWasRunning = true;
@@ -231,8 +285,10 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
                     }
 
                     boolean anyRunning = false;
+                    int failedFeeds = 0;
                     for (androidx.work.WorkInfo info : workInfos) {
                         androidx.work.WorkInfo.State state = info.getState();
+                        failedFeeds += info.getOutputData().getInt(SyncWorker.KEY_FAILED_COUNT, 0);
                         if (state == androidx.work.WorkInfo.State.ENQUEUED
                                 || state == androidx.work.WorkInfo.State.RUNNING
                                 || state == androidx.work.WorkInfo.State.BLOCKED) {
@@ -250,6 +306,14 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
                         SyncLog.d("manual-sync finished -> stopping spinner, refreshing list");
                         binding.swipeRefresh.setRefreshing(false);
                         viewModel.refresh();
+                        if (failedFeeds > 0) {
+                            Snackbar.make(binding.getRoot(),
+                                            getResources().getQuantityString(R.plurals.snackbar_refresh_failed, failedFeeds, failedFeeds),
+                                            Snackbar.LENGTH_LONG)
+                                    .setAction(R.string.action_details, v ->
+                                            startActivity(new Intent(this, FeedManagementActivity.class)))
+                                    .show();
+                        }
                     }
                 });
     }
@@ -259,6 +323,104 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             adapter.submitList(items);
             updateEmptyState(items);
         });
+        viewModel.getFeeds().observe(this, feeds -> {
+            drawerFeeds = feeds;
+            rebuildDrawerLists();
+            updateEmptyState(adapter.getCurrentList());
+            if (!feeds.isEmpty()) {
+                maybePromptForNotifications();
+            }
+        });
+        viewModel.getTags().observe(this, tags -> {
+            drawerTags = tags;
+            rebuildDrawerLists();
+        });
+        viewModel.getUnreadCounts().observe(this, counts -> {
+            unreadCounts = counts;
+            rebuildDrawerLists();
+        });
+    }
+
+    private void rebuildDrawerLists() {
+        Menu menu = binding.navView.getMenu();
+        int totalUnread = 0;
+        for (int count : unreadCounts.values()) {
+            totalUnread += count;
+        }
+        setBadge(menu.findItem(R.id.nav_all), totalUnread);
+
+        MenuItem feedsSection = menu.findItem(R.id.nav_section_feeds);
+        feedsSection.setVisible(!drawerFeeds.isEmpty());
+        Menu feedsMenu = feedsSection.getSubMenu();
+        feedsMenu.removeGroup(R.id.group_feeds);
+        for (FeedTags ft : drawerFeeds) {
+            Feed feed = ft.getFeed();
+            String title = feed.getTitle() != null ? feed.getTitle() : feed.getUrl();
+            MenuItem item = feedsMenu.add(R.id.group_feeds, FEED_ITEM_BASE + (int) feed.getId(), Menu.NONE, title);
+            item.setIcon(R.drawable.ic_rss_feed);
+            item.setCheckable(true);
+            setBadge(item, countOrZero(feed.getId()));
+            if (item.getItemId() == selectedNavId) {
+                setTitle(title);
+            }
+        }
+
+        MenuItem tagsSection = menu.findItem(R.id.nav_section_tags);
+        tagsSection.setVisible(!drawerTags.isEmpty());
+        Menu tagsMenu = tagsSection.getSubMenu();
+        tagsMenu.removeGroup(R.id.group_tags);
+        for (Tag tag : drawerTags) {
+            MenuItem item = tagsMenu.add(R.id.group_tags, TAG_ITEM_BASE + (int) tag.getId(), Menu.NONE, tag.getName());
+            item.setIcon(R.drawable.ic_tag);
+            item.setCheckable(true);
+            setBadge(item, tagUnreadCount(tag.getId()));
+            if (item.getItemId() == selectedNavId) {
+                setTitle(tag.getName());
+            }
+        }
+
+        if (menu.findItem(selectedNavId) != null) {
+            binding.navView.setCheckedItem(selectedNavId);
+        }
+        updateSearchHint();
+    }
+
+    private int countOrZero(long feedId) {
+        Integer count = unreadCounts.get(feedId);
+        return count != null ? count : 0;
+    }
+
+    private int tagUnreadCount(long tagId) {
+        int total = 0;
+        for (FeedTags ft : drawerFeeds) {
+            for (Tag tag : ft.getTags()) {
+                if (tag.getId() == tagId) {
+                    total += countOrZero(ft.getFeed().getId());
+                    break;
+                }
+            }
+        }
+        return total;
+    }
+
+    private void setBadge(MenuItem item, int count) {
+        if (item == null) {
+            return;
+        }
+        if (count <= 0) {
+            item.setActionView(null);
+            return;
+        }
+        if (item.getActionView() == null) {
+            item.setActionView(R.layout.view_nav_badge);
+        }
+        ((TextView) item.getActionView()).setText(String.valueOf(count));
+    }
+
+    private void updateSearchHint() {
+        if (searchView != null) {
+            searchView.setQueryHint(getString(R.string.hint_search_in, getTitle()));
+        }
     }
 
     private void updateEmptyState(List<ArticleUiState> items) {
@@ -267,6 +429,15 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             return;
         }
         binding.emptyState.getRoot().setVisibility(View.VISIBLE);
+
+        boolean noFeeds = viewModel.isFeedsLoaded() && !viewModel.hasFeeds();
+        binding.emptyState.buttonEmptyAddFeed.setVisibility(noFeeds ? View.VISIBLE : View.GONE);
+        binding.emptyState.buttonEmptyImport.setVisibility(noFeeds ? View.VISIBLE : View.GONE);
+        if (noFeeds) {
+            binding.emptyState.textEmptyKaomoji.setText(R.string.empty_state_no_feeds_kaomoji);
+            binding.emptyState.textEmptyCaption.setText(R.string.empty_state_no_feeds_caption);
+            return;
+        }
 
         String query = viewModel.getSearchQuery();
         int kaomojiRes;
@@ -288,10 +459,10 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
 
         assert searchView != null;
-        searchView.setQueryHint(getString(R.string.hint_search_articles));
+        updateSearchHint();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

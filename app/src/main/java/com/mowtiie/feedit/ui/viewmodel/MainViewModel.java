@@ -12,6 +12,7 @@ import com.mowtiie.feedit.data.ArticleDao;
 import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.model.FeedTags;
+import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.PrefsKeys;
 
@@ -44,6 +45,7 @@ public class MainViewModel extends AndroidViewModel {
 
     private List<Article> latestArticles = new ArrayList<>();
     private List<FeedTags> latestFeeds = new ArrayList<>();
+    private boolean feedsLoaded = false;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -60,11 +62,13 @@ public class MainViewModel extends AndroidViewModel {
         });
         articleUiStates.addSource(repository.getFeedsWithTags(), feeds -> {
             latestFeeds = feeds;
+            feedsLoaded = true;
             articleUiStates.setValue(buildUiStates());
         });
 
         repository.loadTags();
         repository.loadFeedsWithTags();
+        repository.loadUnreadCounts();
         refresh();
     }
 
@@ -86,9 +90,37 @@ public class MainViewModel extends AndroidViewModel {
         refresh();
     }
 
+    public void selectTag(long tagId) {
+        scopeFeedId = null;
+        scopeTagId = tagId;
+        starredOnly = false;
+        refresh();
+    }
+
+    public LiveData<List<FeedTags>> getFeeds() {
+        return repository.getFeedsWithTags();
+    }
+
+    public LiveData<List<Tag>> getTags() {
+        return repository.getTags();
+    }
+
+    public LiveData<Map<Long, Integer>> getUnreadCounts() {
+        return repository.getUnreadCounts();
+    }
+
+    public boolean isFeedsLoaded() {
+        return feedsLoaded;
+    }
+
+    public boolean hasFeeds() {
+        return !latestFeeds.isEmpty();
+    }
+
     public void selectFeed(long feedId) {
         scopeFeedId = feedId;
         scopeTagId = null;
+        starredOnly = false;
         refresh();
     }
 

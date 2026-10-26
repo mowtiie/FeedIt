@@ -9,6 +9,7 @@ public final class PrefsKeys {
     public static final String SHOW_UNREAD = "show_unread";
     public static final String SYNC_WIFI_ONLY = "sync_wifi_only";
     public static final String SYNC_INTERVAL_MINUTES = "sync_interval_minutes";
+    public static final String NOTIFICATION_PROMPT_SHOWN = "notification_prompt_shown";
     public static final String RETENTION_DAYS = "retention_days";
     public static final long DEFAULT_RETENTION_DAYS = 90L;
     public static final String NOTIFICATIONS_ENABLED = "notifications_enabled";

@@ -2,6 +2,7 @@ package com.mowtiie.feedit.sync;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -30,6 +31,7 @@ import java.util.concurrent.Future;
 public class SyncWorker extends Worker {
 
     public static final String KEY_FEED_ID = "feed_id";
+    public static final String KEY_FAILED_COUNT = "failed_count";
 
     private static final int OUTCOME_NOT_MODIFIED = -2;
     private static final int OUTCOME_FETCH_FAILED = -1;
@@ -144,7 +146,7 @@ public class SyncWorker extends Worker {
             SyncLog.w("Run took over 9 min — approaching WorkManager's 10-min limit; "
                     + "the OS may kill long runs before they finish.");
         }
-        return Result.success();
+        return Result.success(new Data.Builder().putInt(KEY_FAILED_COUNT, failed).build());
     }
 
     private FeedOutcome runOneFeed(Feed feed, String label, FeedDao feedDao, ArticleDao articleDao,
@@ -166,6 +168,8 @@ public class SyncWorker extends Worker {
         } catch (Exception e) {
             long elapsed = System.currentTimeMillis() - feedStart;
             SyncLog.e("<-- " + label + " : EXCEPTION after " + elapsed + "ms", e);
+            feedDao.setLastError(feed.getId(), e.getClass().getSimpleName()
+                    + (e.getMessage() != null ? ": " + e.getMessage() : ""));
             return new FeedOutcome(OUTCOME_FETCH_FAILED, null, e);
         }
     }
@@ -179,12 +183,14 @@ public class SyncWorker extends Worker {
                 + " (hadEtag=" + (feed.getEtag() != null) + ")");
 
         if (fetchResult.isNotModified()) {
+            feed.setLastError(null);
             feed.setLastFetched(System.currentTimeMillis());
             feedDao.updateFeed(feed);
             return OUTCOME_NOT_MODIFIED;
         }
         if (fetchResult.isError()) {
             SyncLog.w("    " + label + " fetch error: " + fetchResult.getErrorMessage());
+            feedDao.setLastError(feed.getId(), fetchResult.getErrorMessage());
             return OUTCOME_FETCH_FAILED;
         }
 
@@ -193,6 +199,7 @@ public class SyncWorker extends Worker {
         SyncLog.d("    " + label + " parsed " + meta.getArticles().size() + " items in "
                 + (System.currentTimeMillis() - parseStart) + "ms");
 
+        feed.setLastError(null);
         feed.setEtag(fetchResult.getNewEtag());
         feed.setLastModified(fetchResult.getNewLastModified());
         feed.setLastFetched(System.currentTimeMillis());

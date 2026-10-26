@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -154,6 +155,12 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         Article article = item.getArticle();
         starIndicator.setVisibility(article.isStarred() ? View.VISIBLE : View.GONE);
         card.setCardBackgroundColor(resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
+        Context context = card.getContext();
+        String state = context.getString(article.isRead() ? R.string.state_read : R.string.state_unread);
+        if (article.isStarred()) {
+            state += ", " + context.getString(R.string.content_desc_starred);
+        }
+        ViewCompat.setStateDescription(card, state);
         card.setOnClickListener(v -> listener.onArticleClicked(item));
         card.setOnLongClickListener(v -> {
             listener.onArticleLongClicked(item);

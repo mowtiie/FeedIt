@@ -11,7 +11,9 @@ import com.mowtiie.feedit.model.Article;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ArticleDao {
 
@@ -87,6 +89,19 @@ public class ArticleDao {
         } finally {
             db.endTransaction();
         }
+    }
+
+    /** Unread article count per feed id; feeds with no unread articles are absent. */
+    public Map<Long, Integer> getUnreadCountsByFeed() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Map<Long, Integer> counts = new HashMap<>();
+        try (Cursor cursor = db.rawQuery(
+                "SELECT feed_id, COUNT(*) FROM articles WHERE is_read = 0 GROUP BY feed_id", null)) {
+            while (cursor.moveToNext()) {
+                counts.put(cursor.getLong(0), cursor.getInt(1));
+            }
+        }
+        return counts;
     }
 
     /** Deletes unstarred articles published before the cutoff. Undated articles are never pruned. */

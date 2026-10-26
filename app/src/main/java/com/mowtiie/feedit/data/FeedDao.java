@@ -116,6 +116,7 @@ public class FeedDao {
         feed.setNotifyNew(cursor.getInt(cursor.getColumnIndexOrThrow("notify_new")) != 0);
         feed.setOpenMode(cursor.getInt(cursor.getColumnIndexOrThrow("open_mode")));
         feed.setCreatedAt(cursor.getLong(cursor.getColumnIndexOrThrow("created_at")));
+        feed.setLastError(cursor.getString(cursor.getColumnIndexOrThrow("last_error")));
         return feed;
     }
 
@@ -137,7 +138,15 @@ public class FeedDao {
         values.put("notify_new", feed.isNotifyNew() ? 1 : 0);
         values.put("open_mode", feed.getOpenMode());
         values.put("created_at", feed.getCreatedAt());
+        values.put("last_error", feed.getLastError());
         return values;
+    }
+
+    public void setLastError(long feedId, String error) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("last_error", error);
+        db.update("feeds", values, "id = ?", new String[]{String.valueOf(feedId)});
     }
 
     public void setNotifyNew(long feedId, boolean enabled) {
