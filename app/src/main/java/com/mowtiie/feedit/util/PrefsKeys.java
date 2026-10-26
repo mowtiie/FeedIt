@@ -9,6 +9,15 @@ public final class PrefsKeys {
     public static final String SHOW_UNREAD = "show_unread";
     public static final String SYNC_WIFI_ONLY = "sync_wifi_only";
     public static final String SYNC_INTERVAL_MINUTES = "sync_interval_minutes";
+    public static final String NOTIFICATION_PROMPT_SHOWN = "notification_prompt_shown";
+    public static final String DEFAULT_OPEN_MODE = "default_open_mode";
+    public static final String READER_TEXT_SIZE = "reader_text_size";
+    public static final String TEXT_SIZE_SMALL = "small";
+    public static final String TEXT_SIZE_DEFAULT = "default";
+    public static final String TEXT_SIZE_LARGE = "large";
+    public static final String TEXT_SIZE_XLARGE = "xlarge";
+    public static final String RETENTION_DAYS = "retention_days";
+    public static final long DEFAULT_RETENTION_DAYS = 90L;
     public static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
     public static final String DARK_MODE = "dark_mode";
 
@@ -28,6 +37,7 @@ public final class PrefsKeys {
     public static final String LAYOUT_COMPACT = "compact";
     public static final String LAYOUT_CARD = "card";
     public static final String LAYOUT_MAGAZINE = "magazine";
+    public static final String DEFAULT_LAYOUT = LAYOUT_CARD;
 
     private PrefsKeys() {
     }

@@ -26,8 +26,8 @@ android {
         applicationId = "com.mowtiie.feedit"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -36,11 +36,13 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
 
@@ -48,7 +50,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -58,10 +60,13 @@ android {
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_debug"
             manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_debug_round"
             isMinifyEnabled = false
-            isShrinkResources = false
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
         }
+    }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 
     buildFeatures {
@@ -87,6 +92,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.material)
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
 }

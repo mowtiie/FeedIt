@@ -13,6 +13,7 @@ import androidx.activity.EdgeToEdge;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowtiie.feedit.BuildConfig;
 import com.mowtiie.feedit.R;
+import com.mowtiie.feedit.util.BrowserUtil;
 import com.mowtiie.feedit.databinding.ActivityAboutBinding;
 import com.mowtiie.feedit.util.InsetsUtil;
 
@@ -83,11 +84,7 @@ public class AboutActivity extends FeedItActivity {
     }
 
     private void openUrl(int urlStringRes) {
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(urlStringRes))));
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No browser app found", Toast.LENGTH_SHORT).show();
-        }
+        BrowserUtil.openUrl(this, getString(urlStringRes));
     }
 
     @Override

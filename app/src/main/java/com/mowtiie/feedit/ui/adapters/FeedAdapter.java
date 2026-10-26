@@ -1,6 +1,7 @@
 package com.mowtiie.feedit.ui.adapters;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -36,6 +37,7 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
                 public boolean areContentsTheSame(@NonNull FeedTags oldItem, @NonNull FeedTags newItem) {
                     return Objects.equals(oldItem.getFeed().getTitle(), newItem.getFeed().getTitle())
                             && Objects.equals(oldItem.getFeed().getUrl(), newItem.getFeed().getUrl())
+                            && Objects.equals(oldItem.getFeed().getLastError(), newItem.getFeed().getLastError())
                             && tagSignature(oldItem).equals(tagSignature(newItem));
                 }
 
@@ -79,6 +81,13 @@ public class FeedAdapter extends ListAdapter<FeedTags, FeedAdapter.ViewHolder> {
         void bind(FeedTags item, Listener listener) {
             binding.textFeedTitle.setText(item.getFeed().getTitle() != null ? item.getFeed().getTitle() : item.getFeed().getUrl());
             binding.textFeedUrl.setText(item.getFeed().getUrl());
+
+            String lastError = item.getFeed().getLastError();
+            binding.textFeedError.setVisibility(lastError != null ? View.VISIBLE : View.GONE);
+            if (lastError != null) {
+                binding.textFeedError.setText(binding.getRoot().getContext()
+                        .getString(R.string.feed_sync_failed, lastError));
+            }
 
             binding.chipGroupFeedTags.removeAllViews();
             for (Tag tag : item.getTags()) {

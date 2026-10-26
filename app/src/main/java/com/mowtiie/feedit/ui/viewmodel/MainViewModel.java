@@ -12,21 +12,20 @@ import com.mowtiie.feedit.data.ArticleDao;
 import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.model.FeedTags;
+import com.mowtiie.feedit.model.Tag;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.PrefsKeys;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public class MainViewModel extends AndroidViewModel {
-
-    private static final String PREFS_NAME = "feedit_prefs";
-    private static final String KEY_SORT_ORDER = "sort_order";
 
     private final FeedRepository repository;
     private final SharedPreferences prefs;
@@ -43,13 +42,14 @@ public class MainViewModel extends AndroidViewModel {
 
     private List<Article> latestArticles = new ArrayList<>();
     private List<FeedTags> latestFeeds = new ArrayList<>();
+    private boolean feedsLoaded = false;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
         repository = FeedRepository.getInstance(application);
-        prefs = application.getSharedPreferences(PREFS_NAME, Application.MODE_PRIVATE);
+        prefs = application.getSharedPreferences(PrefsKeys.PREFS_NAME, Application.MODE_PRIVATE);
         sortOrder = ArticleDao.SortOrder.valueOf(
-                prefs.getString(KEY_SORT_ORDER, ArticleDao.SortOrder.NEWEST.name()));
+                prefs.getString(PrefsKeys.SORT_ORDER, ArticleDao.SortOrder.NEWEST.name()));
         showRead = prefs.getBoolean(PrefsKeys.SHOW_READ, true);
         showUnread = prefs.getBoolean(PrefsKeys.SHOW_UNREAD, true);
 
@@ -59,12 +59,12 @@ public class MainViewModel extends AndroidViewModel {
         });
         articleUiStates.addSource(repository.getFeedsWithTags(), feeds -> {
             latestFeeds = feeds;
+            feedsLoaded = true;
             articleUiStates.setValue(buildUiStates());
         });
 
         repository.loadTags();
         repository.loadFeedsWithTags();
-        refresh();
     }
 
     public LiveData<List<ArticleUiState>> getArticleUiStates() {
@@ -85,9 +85,37 @@ public class MainViewModel extends AndroidViewModel {
         refresh();
     }
 
+    public void selectTag(long tagId) {
+        scopeFeedId = null;
+        scopeTagId = tagId;
+        starredOnly = false;
+        refresh();
+    }
+
+    public LiveData<List<FeedTags>> getFeeds() {
+        return repository.getFeedsWithTags();
+    }
+
+    public LiveData<List<Tag>> getTags() {
+        return repository.getTags();
+    }
+
+    public LiveData<Map<Long, Integer>> getUnreadCounts() {
+        return repository.getUnreadCounts();
+    }
+
+    public boolean isFeedsLoaded() {
+        return feedsLoaded;
+    }
+
+    public boolean hasFeeds() {
+        return !latestFeeds.isEmpty();
+    }
+
     public void selectFeed(long feedId) {
         scopeFeedId = feedId;
         scopeTagId = null;
+        starredOnly = false;
         refresh();
     }
 
@@ -112,7 +140,7 @@ public class MainViewModel extends AndroidViewModel {
 
     public void setSortOrder(ArticleDao.SortOrder order) {
         this.sortOrder = order;
-        prefs.edit().putString(KEY_SORT_ORDER, order.name()).apply();
+        prefs.edit().putString(PrefsKeys.SORT_ORDER, order.name()).apply();
         refresh();
     }
 
@@ -148,13 +176,32 @@ public class MainViewModel extends AndroidViewModel {
         repository.setArticleStarred(article.getId(), newValue);
     }
 
-    public void markAllRead() {
-        repository.markAllRead(scopeFeedId, scopeTagId);
-        refresh();
+    /** Marks every unread article in the current view (scope, starred, search) as read and returns their ids. */
+    public List<Long> markAllRead() {
+        List<Long> ids = new ArrayList<>();
+        for (Article article : latestArticles) {
+            if (!article.isRead()) {
+                ids.add(article.getId());
+            }
+        }
+        setReadForIds(ids, true);
+        return ids;
+    }
+
+    public void markUnread(List<Long> articleIds) {
+        setReadForIds(articleIds, false);
+    }
+
+    private void setReadForIds(List<Long> articleIds, boolean read) {
+        if (articleIds.isEmpty()) {
+            return;
+        }
+        updateArticlesOptimistically(new HashSet<>(articleIds), copy -> copy.setRead(read));
+        repository.setArticlesRead(articleIds, read);
     }
 
     public void refresh() {
-        repository.loadArticles(scopeFeedId, scopeTagId, starredOnly, searchQuery, sortOrder);
+        repository.loadArticles(scopeFeedId, scopeTagId, showRead, showUnread, starredOnly, searchQuery, sortOrder);
     }
 
     private void updateArticleOptimistically(long articleId, Consumer<Article> mutator) {
@@ -165,30 +212,12 @@ public class MainViewModel extends AndroidViewModel {
         for (int i = 0; i < latestArticles.size(); i++) {
             Article original = latestArticles.get(i);
             if (articleIds.contains(original.getId())) {
-                Article copy = copyOf(original);
+                Article copy = new Article(original);
                 mutator.accept(copy);
                 latestArticles.set(i, copy);
             }
         }
         articleUiStates.setValue(buildUiStates());
-    }
-
-    private Article copyOf(Article a) {
-        Article copy = new Article();
-        copy.setId(a.getId());
-        copy.setFeedId(a.getFeedId());
-        copy.setGuid(a.getGuid());
-        copy.setTitle(a.getTitle());
-        copy.setLink(a.getLink());
-        copy.setAuthor(a.getAuthor());
-        copy.setSummary(a.getSummary());
-        copy.setContent(a.getContent());
-        copy.setImageUrl(a.getImageUrl());
-        copy.setPublishedAt(a.getPublishedAt());
-        copy.setFetchedAt(a.getFetchedAt());
-        copy.setRead(a.isRead());
-        copy.setStarred(a.isStarred());
-        return copy;
     }
 
     private List<ArticleUiState> buildUiStates() {

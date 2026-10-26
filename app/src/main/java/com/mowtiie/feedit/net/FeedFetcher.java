@@ -1,15 +1,22 @@
 package com.mowtiie.feedit.net;
 
+import com.mowtiie.feedit.BuildConfig;
 import com.mowtiie.feedit.sync.SyncLog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.UnknownServiceException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 public class FeedFetcher {
+
+    static final String USER_AGENT = "FeedIt/" + BuildConfig.VERSION_NAME + " (Android RSS reader)";
+    static final String ACCEPT = "application/rss+xml, application/atom+xml, application/feed+json, "
+            + "application/xml;q=0.9, text/xml;q=0.9, */*;q=0.8";
 
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 15_000;
@@ -18,21 +25,19 @@ public class FeedFetcher {
     public FetchResult fetch(String url, String previousEtag, String previousLastModified) {
         HttpURLConnection connection = null;
         try {
-            connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setInstanceFollowRedirects(true);
-            connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
-            connection.setReadTimeout(READ_TIMEOUT_MS);
-            connection.setRequestProperty("Accept-Encoding", "gzip");
-            connection.setRequestProperty("User-Agent", "FeedIt/1.0 (Android RSS reader)");
-
+            Map<String, String> headers = new LinkedHashMap<>();
+            headers.put("Accept-Encoding", "gzip");
+            headers.put("Accept", ACCEPT);
+            headers.put("User-Agent", USER_AGENT);
             if (previousEtag != null) {
-                connection.setRequestProperty("If-None-Match", previousEtag);
+                headers.put("If-None-Match", previousEtag);
             }
             if (previousLastModified != null) {
-                connection.setRequestProperty("If-Modified-Since", previousLastModified);
+                headers.put("If-Modified-Since", previousLastModified);
             }
 
             long connectStart = System.currentTimeMillis();
+            connection = SafeHttp.open(url, CONNECT_TIMEOUT_MS, READ_TIMEOUT_MS, headers);
             int status = connection.getResponseCode();
             SyncLog.d("      HTTP " + status + " headers in " + (System.currentTimeMillis() - connectStart) + "ms");
 
@@ -40,7 +45,7 @@ public class FeedFetcher {
                 return FetchResult.notModified(status);
             }
             if (status < 200 || status >= 300) {
-                return FetchResult.error("HTTP " + status + " fetching " + url);
+                return FetchResult.error(describeHttpError(status, url));
             }
 
             long bodyStart = System.currentTimeMillis();
@@ -51,6 +56,8 @@ public class FeedFetcher {
             String lastModified = connection.getHeaderField("Last-Modified");
             return FetchResult.success(status, body, etag, lastModified);
 
+        } catch (UnknownServiceException e) {
+            return FetchResult.error("Cleartext HTTP is blocked, the feed must be served over https: " + url);
         } catch (IOException e) {
             SyncLog.w("      fetch threw " + e.getClass().getSimpleName() + ": " + e.getMessage() + " for " + url);
             return FetchResult.error(e.getClass().getSimpleName() + (e.getMessage() != null ? ": " + e.getMessage() : ""));
@@ -59,6 +66,13 @@ public class FeedFetcher {
                 connection.disconnect();
             }
         }
+    }
+
+    static String describeHttpError(int status, String url) {
+        if (status == 403 || status == 429 || status == 503) {
+            return "HTTP " + status + " fetching " + url + " (the site may be blocking automated readers)";
+        }
+        return "HTTP " + status + " fetching " + url;
     }
 
     private byte[] readBody(HttpURLConnection connection) throws IOException {

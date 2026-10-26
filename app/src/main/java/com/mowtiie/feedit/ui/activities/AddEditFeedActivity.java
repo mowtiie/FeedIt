@@ -58,7 +58,9 @@ public class AddEditFeedActivity extends FeedItActivity {
             setTitle(R.string.title_add_feed);
         }
 
-        binding.toggleOpenMode.check(R.id.button_open_in_app);
+        binding.toggleOpenMode.check(viewModel.getInitialOpenMode() == Feed.OPEN_MODE_BROWSER
+                ? R.id.button_open_browser
+                : R.id.button_open_in_app);
         setupListeners();
         observeViewModel();
     }
@@ -87,6 +89,12 @@ public class AddEditFeedActivity extends FeedItActivity {
         });
         viewModel.getFormState().observe(this, this::prefillForm);
         viewModel.isLoading().observe(this, this::setLoading);
+        viewModel.getStatusMessage().observe(this, status -> {
+            if (status != null) {
+                binding.textSavingStatus.setText(status);
+            }
+        });
+        binding.buttonCancelSaving.setOnClickListener(v -> viewModel.cancelSave());
         viewModel.getErrorMessage().observe(this, message -> {
             if (message != null) {
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
@@ -112,6 +120,8 @@ public class AddEditFeedActivity extends FeedItActivity {
 
     private void setLoading(boolean loading) {
         binding.progressSaving.setVisibility(loading ? View.VISIBLE : View.GONE);
+        binding.textSavingStatus.setVisibility(loading ? View.VISIBLE : View.GONE);
+        binding.buttonCancelSaving.setVisibility(loading ? View.VISIBLE : View.GONE);
         binding.editFeedUrl.setEnabled(!loading);
         binding.editFeedTitle.setEnabled(!loading);
     }

@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.data.DatabaseHelper;
 import com.mowtiie.feedit.data.FeedDao;
 import com.mowtiie.feedit.data.FeedRepository;
@@ -43,6 +44,9 @@ public class SettingsViewModel extends AndroidViewModel {
 
     private final MutableLiveData<Boolean> wifiOnly = new MutableLiveData<>();
     private final MutableLiveData<Long> syncIntervalMinutes = new MutableLiveData<>();
+    private final MutableLiveData<Long> retentionDays = new MutableLiveData<>();
+    private final MutableLiveData<Integer> defaultOpenMode = new MutableLiveData<>();
+    private final MutableLiveData<String> readerTextSize = new MutableLiveData<>();
     private final MutableLiveData<Boolean> notificationsEnabled = new MutableLiveData<>();
     private final MutableLiveData<String> darkMode = new MutableLiveData<>();
     private final MutableLiveData<String> startupPage = new MutableLiveData<>();
@@ -57,16 +61,46 @@ public class SettingsViewModel extends AndroidViewModel {
         prefs = application.getSharedPreferences(PrefsKeys.PREFS_NAME, Application.MODE_PRIVATE);
         wifiOnly.setValue(prefs.getBoolean(PrefsKeys.SYNC_WIFI_ONLY, false));
         syncIntervalMinutes.setValue(prefs.getLong(PrefsKeys.SYNC_INTERVAL_MINUTES, 60L));
+        retentionDays.setValue(prefs.getLong(PrefsKeys.RETENTION_DAYS, PrefsKeys.DEFAULT_RETENTION_DAYS));
+        defaultOpenMode.setValue(prefs.getInt(PrefsKeys.DEFAULT_OPEN_MODE, Feed.OPEN_MODE_IN_APP));
+        readerTextSize.setValue(prefs.getString(PrefsKeys.READER_TEXT_SIZE, PrefsKeys.TEXT_SIZE_DEFAULT));
         notificationsEnabled.setValue(prefs.getBoolean(PrefsKeys.NOTIFICATIONS_ENABLED, true));
         darkMode.setValue(prefs.getString(PrefsKeys.DARK_MODE, "system"));
         startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
         contrastLevel.setValue(prefs.getString(PrefsKeys.CONTRAST_LEVEL, PrefsKeys.CONTRAST_STANDARD));
         dynamicColorsEnabled.setValue(prefs.getBoolean(PrefsKeys.DYNAMIC_COLORS_ENABLED, false));
-        articleLayoutStyle.setValue(prefs.getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_MAGAZINE));
+        articleLayoutStyle.setValue(prefs.getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.DEFAULT_LAYOUT));
     }
 
     public LiveData<Boolean> getWifiOnly() {
         return wifiOnly;
+    }
+
+    public LiveData<Integer> getDefaultOpenMode() {
+        return defaultOpenMode;
+    }
+
+    public void setDefaultOpenMode(int mode) {
+        prefs.edit().putInt(PrefsKeys.DEFAULT_OPEN_MODE, mode).apply();
+        defaultOpenMode.setValue(mode);
+    }
+
+    public LiveData<String> getReaderTextSize() {
+        return readerTextSize;
+    }
+
+    public void setReaderTextSize(String size) {
+        prefs.edit().putString(PrefsKeys.READER_TEXT_SIZE, size).apply();
+        readerTextSize.setValue(size);
+    }
+
+    public LiveData<Long> getRetentionDays() {
+        return retentionDays;
+    }
+
+    public void setRetentionDays(long days) {
+        prefs.edit().putLong(PrefsKeys.RETENTION_DAYS, days).apply();
+        retentionDays.setValue(days);
     }
 
     public LiveData<Long> getSyncIntervalMinutes() {
@@ -173,14 +207,15 @@ public class SettingsViewModel extends AndroidViewModel {
                     new OpmlWriter().write(out, entries);
                 }
 
-                opmlMessage.postValue("Exported " + entries.size() + " feeds");
+                opmlMessage.postValue(getApplication().getResources().getQuantityString(R.plurals.opml_exported, entries.size(), entries.size()));
             } catch (Exception e) {
-                opmlMessage.postValue("Export failed: " + e.getMessage());
+                opmlMessage.postValue(getApplication().getString(R.string.opml_export_failed, e.getMessage()));
             } finally {
                 opmlBusy.postValue(false);
             }
         });
     }
+
 
     public void importOpml(Uri sourceUri) {
         opmlBusy.setValue(true);
@@ -218,26 +253,26 @@ public class SettingsViewModel extends AndroidViewModel {
                     }
 
                     Feed feed = new Feed();
+                    feed.setOpenMode(prefs.getInt(PrefsKeys.DEFAULT_OPEN_MODE, Feed.OPEN_MODE_IN_APP));
                     feed.setUrl(entry.getFeedUrl());
                     feed.setTitle(entry.getTitle());
                     feed.setSiteUrl(entry.getSiteUrl());
                     feed.setCreatedAt(System.currentTimeMillis());
-                    feed.setNotifyNew(false);
-                    feed.setOpenMode(Feed.OPEN_MODE_IN_APP);
+                    feed.setNotifyNew(true);
+                    feed.setOpenMode(Feed.OPEN_MODE_BROWSER);
 
                     try {
                         long feedId = feedDao.insertFeed(feed);
                         feedDao.setTagsForFeed(feedId, tagIds);
                         imported++;
-                    } catch (SQLiteConstraintException alreadySubscribed) {
-                        // Same feed URL already exists — skip it rather than duplicate.
+                    } catch (SQLiteConstraintException ignored) {
                     }
                 }
 
                 FeedRepository.getInstance(getApplication()).loadFeedsWithTags();
-                opmlMessage.postValue("Imported " + imported + " feeds");
+                opmlMessage.postValue(getApplication().getResources().getQuantityString(R.plurals.opml_imported, imported, imported));
             } catch (Exception e) {
-                opmlMessage.postValue("Import failed: " + e.getMessage());
+                opmlMessage.postValue(getApplication().getString(R.string.opml_import_failed, e.getMessage()));
             } finally {
                 opmlBusy.postValue(false);
             }

@@ -1,5 +1,6 @@
 package com.mowtiie.feedit.ui.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.TypedValue;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -62,13 +64,14 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
             };
 
     private final Listener listener;
-    private String layoutStyle = PrefsKeys.LAYOUT_CARD;
+    private String layoutStyle = PrefsKeys.DEFAULT_LAYOUT;
 
     public ArticleAdapter(Listener listener) {
         super(DIFF_CALLBACK);
         this.listener = listener;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setLayoutStyle(String style) {
         if (!style.equals(layoutStyle)) {
             layoutStyle = style;
@@ -135,23 +138,33 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
     }
 
     private static void bindThumbnail(ImageView imageView, Article article) {
-        if (article.getImageUrl() != null) {
-            Glide.with(imageView.getContext())
-                    .load(article.getImageUrl())
-                    .placeholder(R.drawable.placeholder_thumbnail_loading)
-                    .error(R.drawable.placeholder_thumbnail_error)
-                    .centerCrop()
-                    .into(imageView);
-        } else {
+        String imageUrl = article.getImageUrl();
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            // Text-only article: drop the thumbnail slot instead of showing an empty placeholder.
+            Glide.with(imageView.getContext()).clear(imageView);
             imageView.setImageDrawable(null);
-            imageView.setBackgroundResource(R.drawable.placeholder_thumbnail);
+            imageView.setVisibility(View.GONE);
+            return;
         }
+        imageView.setVisibility(View.VISIBLE);
+        Glide.with(imageView.getContext())
+                .load(imageUrl)
+                .placeholder(R.drawable.placeholder_thumbnail_loading)
+                .error(R.drawable.placeholder_thumbnail_error)
+                .centerCrop()
+                .into(imageView);
     }
 
     private static void bindStarAndClick(MaterialCardView card, ImageView starIndicator, ArticleUiState item, Listener listener) {
         Article article = item.getArticle();
         starIndicator.setVisibility(article.isStarred() ? View.VISIBLE : View.GONE);
         card.setCardBackgroundColor(resolveThemeColor(card.getContext(), com.google.android.material.R.attr.colorSurface));
+        Context context = card.getContext();
+        String state = context.getString(article.isRead() ? R.string.state_read : R.string.state_unread);
+        if (article.isStarred()) {
+            state += ", " + context.getString(R.string.content_desc_starred);
+        }
+        ViewCompat.setStateDescription(card, state);
         card.setOnClickListener(v -> listener.onArticleClicked(item));
         card.setOnLongClickListener(v -> {
             listener.onArticleLongClicked(item);

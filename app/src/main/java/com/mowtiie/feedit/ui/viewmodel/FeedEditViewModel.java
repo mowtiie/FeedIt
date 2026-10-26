@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.data.FeedRepository;
 import com.mowtiie.feedit.data.RepositoryCallback;
 import com.mowtiie.feedit.model.Article;
@@ -18,8 +19,11 @@ import com.mowtiie.feedit.net.FeedAutoDiscovery;
 import com.mowtiie.feedit.net.FeedFetcher;
 import com.mowtiie.feedit.net.FetchResult;
 import com.mowtiie.feedit.parser.FeedParser;
-import com.mowtiie.feedit.parser.ParsedArticle;
 import com.mowtiie.feedit.parser.ParsedFeedMeta;
+
+import com.mowtiie.feedit.sync.ArticleMapper;
+import com.mowtiie.feedit.util.PrefsKeys;
+import com.mowtiie.feedit.sync.RetentionPolicy;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -28,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FeedEditViewModel extends AndroidViewModel {
 
@@ -44,6 +49,8 @@ public class FeedEditViewModel extends AndroidViewModel {
 
     private final MutableLiveData<Boolean> loading = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private final MutableLiveData<Integer> statusMessage = new MutableLiveData<>();
+    private final AtomicInteger saveGeneration = new AtomicInteger();
     private final MutableLiveData<Boolean> saved = new MutableLiveData<>(false);
     private final MediatorLiveData<Feed> formState = new MediatorLiveData<>();
     private final MutableLiveData<Set<Long>> selectedTagIdsLive = new MutableLiveData<>(new HashSet<>());
@@ -52,6 +59,8 @@ public class FeedEditViewModel extends AndroidViewModel {
         super(application);
         repository = FeedRepository.getInstance(application);
         workingFeed.setCreatedAt(System.currentTimeMillis());
+        workingFeed.setOpenMode(application.getSharedPreferences(PrefsKeys.PREFS_NAME, Application.MODE_PRIVATE)
+                .getInt(PrefsKeys.DEFAULT_OPEN_MODE, Feed.OPEN_MODE_IN_APP));
 
         repository.loadTags();
         repository.loadFeedsWithTags();
@@ -128,7 +137,7 @@ public class FeedEditViewModel extends AndroidViewModel {
 
             @Override
             public void onError(Exception e) {
-                errorMessage.postValue("Couldn't create tag: " + e.getMessage());
+                errorMessage.postValue(getApplication().getString(R.string.error_tag_create_failed, e.getMessage()));
             }
         });
     }
@@ -137,13 +146,34 @@ public class FeedEditViewModel extends AndroidViewModel {
         workingFeed.setNotifyNew(value);
     }
 
+    public int getInitialOpenMode() {
+        return workingFeed.getOpenMode();
+    }
+
     public void setOpenMode(int mode) {
         workingFeed.setOpenMode(mode);
     }
 
+    /** String resource id describing the current step while a new feed is being looked up, or null. */
+    public LiveData<Integer> getStatusMessage() {
+        return statusMessage;
+    }
+
+    /** Abandons an in-flight add; its result is ignored when it arrives. */
+    public void cancelSave() {
+        saveGeneration.incrementAndGet();
+        loading.setValue(false);
+        statusMessage.setValue(null);
+    }
+
+    @Override
+    protected void onCleared() {
+        saveGeneration.incrementAndGet();
+    }
+
     public void save(String urlInput, String titleInput) {
         if (urlInput == null || urlInput.trim().isEmpty()) {
-            errorMessage.setValue("Enter a feed URL");
+            errorMessage.setValue(getApplication().getString(R.string.error_enter_feed_url));
             return;
         }
         String trimmedUrl = urlInput.trim();
@@ -162,13 +192,22 @@ public class FeedEditViewModel extends AndroidViewModel {
         }
 
         loading.setValue(true);
+        statusMessage.setValue(R.string.status_finding_feed);
+        int generation = saveGeneration.incrementAndGet();
         String finalTrimmedUrl = trimmedUrl;
         ioExecutor.execute(() -> {
             try {
                 String resolvedUrl = resolveFeedUrl(finalTrimmedUrl);
+                if (generation != saveGeneration.get()) {
+                    return;
+                }
+                statusMessage.postValue(R.string.status_reading_feed);
                 FetchResult fetchResult = fetcher.fetch(resolvedUrl, null, null);
+                if (generation != saveGeneration.get()) {
+                    return;
+                }
                 if (!fetchResult.isSuccess()) {
-                    postError("Couldn't reach that feed: " + fetchResult.getErrorMessage());
+                    postError(getApplication().getString(R.string.error_feed_unreachable, fetchResult.getErrorMessage()));
                     return;
                 }
 
@@ -187,11 +226,25 @@ public class FeedEditViewModel extends AndroidViewModel {
                 feed.setOpenMode(workingFeed.getOpenMode());
                 feed.setCreatedAt(System.currentTimeMillis());
 
+                if (generation != saveGeneration.get()) {
+                    return;
+                }
                 persistFeed(feed, meta);
             } catch (Exception e) {
-                postError("Couldn't read that feed: " + e.getMessage());
+                if (generation == saveGeneration.get()) {
+                    postError(describeReadError(e));
+                }
             }
         });
+    }
+
+    private String describeReadError(Exception e) {
+        String message = e.getMessage();
+        if (e instanceof org.xmlpull.v1.XmlPullParserException
+                && message != null && message.startsWith("Unrecognized feed root element")) {
+            return getApplication().getString(R.string.error_not_a_feed);
+        }
+        return getApplication().getString(R.string.error_feed_read_failed, message);
     }
 
     private String resolveFeedUrl(String input) {
@@ -210,22 +263,9 @@ public class FeedEditViewModel extends AndroidViewModel {
                     finishSaved();
                     return;
                 }
-                List<Article> articles = new ArrayList<>();
-                long now = System.currentTimeMillis();
-                for (ParsedArticle pa : meta.getArticles()) {
-                    Article a = new Article();
-                    a.setFeedId(feedId);
-                    a.setGuid(pa.resolveDedupKey());
-                    a.setTitle(pa.getTitle());
-                    a.setLink(pa.getLink());
-                    a.setAuthor(pa.getAuthor());
-                    a.setSummary(pa.getSummary());
-                    a.setContent(pa.getContent());
-                    a.setImageUrl(pa.getImageUrl());
-                    a.setPublishedAt(pa.getPublishedAt());
-                    a.setFetchedAt(now);
-                    articles.add(a);
-                }
+                List<Article> articles = ArticleMapper.fromParsed(
+                        feedId, meta.getArticles(), System.currentTimeMillis(),
+                        RetentionPolicy.cutoffMillis(getApplication()));
                 repository.insertArticles(articles, new RepositoryCallback<Integer>() {
                     @Override
                     public void onComplete(Integer count) {
@@ -241,18 +281,20 @@ public class FeedEditViewModel extends AndroidViewModel {
 
             @Override
             public void onError(Exception e) {
-                postError("Couldn't save feed: " + e.getMessage());
+                postError(getApplication().getString(R.string.error_feed_save_failed, e.getMessage()));
             }
         });
     }
 
     private void finishSaved() {
         loading.postValue(false);
+        statusMessage.postValue(null);
         saved.postValue(true);
     }
 
     private void postError(String message) {
         loading.postValue(false);
+        statusMessage.postValue(null);
         errorMessage.postValue(message);
     }
 }

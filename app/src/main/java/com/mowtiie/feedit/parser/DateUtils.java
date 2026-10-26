@@ -36,7 +36,7 @@ public final class DateUtils {
     private static Long parseRfc1123(String value) {
         try {
             Matcher matcher = TRAILING_UT.matcher(value);
-            String normalized = matcher.find() ? matcher.replaceAll("UTC") : value;
+            String normalized = matcher.find() ? matcher.replaceAll("GMT") : value;
             ZonedDateTime zdt = ZonedDateTime.parse(normalized, DateTimeFormatter.RFC_1123_DATE_TIME);
             return zdt.toInstant().toEpochMilli();
         } catch (DateTimeParseException e) {

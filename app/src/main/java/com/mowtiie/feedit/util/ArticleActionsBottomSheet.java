@@ -1,5 +1,6 @@
 package com.mowtiie.feedit.util;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -7,8 +8,6 @@ import android.net.Uri;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textview.MaterialTextView;
@@ -21,6 +20,7 @@ public final class ArticleActionsBottomSheet {
     private ArticleActionsBottomSheet() {
     }
 
+    @SuppressLint("InflateParams")
     public static void show(Activity activity, Article article, MainViewModel viewModel) {
         BottomSheetDialog dialog = new BottomSheetDialog(activity);
         View sheetView = activity.getLayoutInflater().inflate(R.layout.bottom_sheet_article_actions, null, false);
@@ -33,10 +33,8 @@ public final class ArticleActionsBottomSheet {
         MaterialTextView textReadState = sheetView.findViewById(R.id.text_mark_read_state);
         if (article.isRead()) {
             textReadState.setText(R.string.action_mark_unread);
-            iconReadState.setImageResource(R.drawable.ic_check_remove);
         } else {
             textReadState.setText(R.string.action_mark_read);
-            iconReadState.setImageResource(R.drawable.ic_check);
         }
         sheetView.findViewById(R.id.row_mark_read_state).setOnClickListener(v -> {
             viewModel.toggleRead(article);
@@ -63,7 +61,8 @@ public final class ArticleActionsBottomSheet {
         });
 
         sheetView.findViewById(R.id.row_open_browser).setOnClickListener(v -> {
-            openInBrowser(activity, article.getLink());
+            viewModel.markRead(article);
+            BrowserUtil.openUrl(activity, article.getLink());
             dialog.dismiss();
         });
 
@@ -81,16 +80,5 @@ public final class ArticleActionsBottomSheet {
             shareIntent.putExtra(Intent.EXTRA_SUBJECT, article.getTitle());
         }
         activity.startActivity(Intent.createChooser(shareIntent, activity.getString(R.string.action_share)));
-    }
-
-    private static void openInBrowser(Activity activity, String url) {
-        if (url == null) {
-            return;
-        }
-        try {
-            activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(activity, "No browser app found", Toast.LENGTH_SHORT).show();
-        }
     }
 }

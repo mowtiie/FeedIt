@@ -19,6 +19,22 @@ public class Article {
     public Article() {
     }
 
+    public Article(Article other) {
+        this.id = other.id;
+        this.feedId = other.feedId;
+        this.guid = other.guid;
+        this.title = other.title;
+        this.link = other.link;
+        this.author = other.author;
+        this.summary = other.summary;
+        this.content = other.content;
+        this.imageUrl = other.imageUrl;
+        this.publishedAt = other.publishedAt;
+        this.fetchedAt = other.fetchedAt;
+        this.isRead = other.isRead;
+        this.isStarred = other.isStarred;
+    }
+
     public long getId() {
         return id;
     }

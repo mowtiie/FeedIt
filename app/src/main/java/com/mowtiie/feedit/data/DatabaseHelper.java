@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "feedit.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private static volatile DatabaseHelper instance;
 
@@ -25,7 +25,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "last_fetched INTEGER," +
                     "notify_new INTEGER NOT NULL DEFAULT 0," +
                     "open_mode INTEGER NOT NULL DEFAULT 0," +
-                    "created_at INTEGER NOT NULL" +
+                    "created_at INTEGER NOT NULL," +
+                    "last_error TEXT" +
                     ")";
 
     private static final String CREATE_TAGS =
@@ -107,5 +108,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE feeds ADD COLUMN last_error TEXT");
+        }
     }
 }

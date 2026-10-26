@@ -6,7 +6,7 @@
 
 **Your feeds. Read your way.**
 
-FeedIt is a simple, open-source RSS and Atom feed reader for Android. No account, no server of ours, no tracking — feeds are fetched directly from their own source, and everything else.
+FeedIt is a simple, open-source RSS and Atom feed reader for Android. No account, no server of ours, no tracking. Feeds are fetched directly from their own source, and everything stays on your device.
 
 </div>
 
@@ -14,15 +14,19 @@ FeedIt is a simple, open-source RSS and Atom feed reader for Android. No account
 
 * **Free and Open Source:** Enjoy complete transparency and community-driven development.
 * **No Account, No Tracking:** There's no login, no analytics, and nothing phoning home beyond fetching the feeds you actually subscribed to. Everything you read, star, and organize stays in a local database on your device.
-* **Feed Management:** Add a feed by URL — with auto-discovery, so pasting a site's homepage usually finds its feed for you — organize with freeform tags, and set each feed to open articles in-app or in your browser.
-* **Multiple Article Layouts:** List, Compact, Card, or Magazine — pick the density and style that actually fits how you read, from a quick headline scan to a full-image-forward view.
-* **Search, Filter & Sort:** Full-text search, a Read/Unread checkbox filter that remembers your choice, and sorting by newest, oldest, unread-first, or by feed.
-* **Background Sync, On Your Terms:** Choose a sync interval from 15 minutes to 12 hours, restrict it to Wi-Fi, or just pull to refresh manually — feeds are fetched concurrently, so one slow server doesn't hold up the rest.
+* **Feed Management:** Add a feed by URL, with auto-discovery so pasting a site's homepage usually finds its feed for you. Organize with freeform tags (listed in the navigation drawer with unread counts), set each feed to open articles in-app or in your browser, and cancel a slow add at any time.
+* **Broad Format Support:** RSS 2.0, RSS 1.0, Atom, and JSON Feed, including YouTube and Mastodon feeds. Insecure `http://` feed links are upgraded to `https://`.
+* **Multiple Article Layouts:** List, Compact, Card, or Magazine. Pick the density and style that actually fits how you read, from a quick headline scan to a full-image-forward view.
+* **Search, Filter & Sort:** Full-text search, Unread/Read filter chips that remember your choice, a Starred view, and sorting by newest, oldest, unread-first, or by feed.
+* **Swipe Gestures:** Swipe an article right to toggle read, or left to toggle its star. "Mark all read" comes with an Undo.
+* **Background Sync, On Your Terms:** Choose a sync interval from 15 minutes to 12 hours, restrict it to Wi-Fi, or just pull to refresh manually. Feeds are fetched concurrently, so one slow server doesn't hold up the rest, and feeds that fail to sync show their last error.
 * **Notifications:** Per-feed toggles for new-article alerts, with their own searchable and sortable management screen, plus a manual-sync summary and a single master switch that overrides everything if you just want quiet.
-* **Quick Actions:** Long-press an article for a bottom sheet context menu — mark read/unread, star, share, or open in your browser — without leaving the list.
+* **Reader:** Read articles in-app with previous/next navigation and an adjustable text size.
+* **Storage Control:** Choose how long to keep unstarred articles (30 days to forever). Starred articles are never pruned.
+* **Quick Actions:** Long-press an article for a bottom sheet context menu to mark read/unread, star, share, or open in your browser without leaving the list.
 * **Appearance:** Choose System, Light, or Dark theme; boost contrast for readability; and opt into Material You dynamic color that matches your device's wallpaper.
 * **OPML Import & Export:** Bring your subscriptions in from another reader, or take them with you if you ever want to leave.
-* **Crash Reports:** If the app encounters an unexpected error, a dialog on the next launch lets you copy the technical details to your clipboard or save them to a file — nothing from your feeds or reading history is ever included, and nothing is sent automatically.
+* **Crash Reports:** If the app encounters an unexpected error, a dialog on the next launch lets you copy the technical details to your clipboard or save them to a file. Nothing from your feeds or reading history is ever included, and nothing is sent automatically.
 
 ## Screenshots
 
@@ -75,7 +79,7 @@ Certificate fingerprints:
 
 ### PGP Signing
 
-As an additional layer on top of the Android signature above, each release is also signed with my PGP key. While `apksigner` confirms the APK itself is intact, a PGP signature confirms that *I* am the one who published this specific file to GitHub — an independent check that doesn't rely on GitHub's account security alone.
+As an additional layer on top of the Android signature above, each release is also signed with my PGP key. While `apksigner` confirms the APK itself is intact, a PGP signature confirms that *I* am the one who published this specific file to GitHub. It is an independent check that doesn't rely on GitHub's account security alone.
 
 **Public key fingerprint:**
 ```
@@ -89,7 +93,7 @@ curl -O https://mowtiie.cc/PGP_PUBLIC_KEY.asc
 gpg --import PGP_PUBLIC_KEY.asc
 ```
 
-After importing, confirm the fingerprint printed by GPG matches the one listed above — that match is what actually establishes trust, not the import step itself. Fetching the key over HTTPS from a domain you already trust is arguably a stronger anchor than a keyserver, since keyservers accept uploads from anyone and don't vouch for identity.
+After importing, confirm the fingerprint printed by GPG matches the one listed above. That match is what actually establishes trust, not the import step itself. Fetching the key over HTTPS from a domain you already trust is arguably a stronger anchor than a keyserver, since keyservers accept uploads from anyone and don't vouch for identity.
 
 Each release includes a detached `.asc` signature alongside the APK. Verify a downloaded release with:
 
@@ -103,11 +107,11 @@ A valid signature looks like:
 Good signature from "Mowtiie <mowtiie.dev@gmail.com>"
 ```
 
-**Note:** PGP signing is a supplementary trust measure, not a substitute for the `apksigner` check above — verify both if you want the highest confidence that a release is genuine and unmodified.
+**Note:** PGP signing is a supplementary trust measure, not a substitute for the `apksigner` check above. Verify both if you want the highest confidence that a release is genuine and unmodified.
 
 ## Mapping Files
 
-Each release on GitHub includes a `mapping-<version>.txt` file alongside the APK. This file is needed to deobfuscate stack traces from crash reports — match the file to the version shown in the crash report header and use it with `retrace` from the Android SDK.
+Each release on GitHub includes a `mapping-<version>.txt` file alongside the APK. This file is needed to deobfuscate stack traces from crash reports. Match the file to the version shown in the crash report header and use it with `retrace` from the Android SDK.
 
 ## Contributing
 

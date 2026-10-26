@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/action_search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom" />
+
+    <item
+        android:id="@+id/action_filter"
+        android:title="@string/action_filter"
+        app:showAsAction="never">
+        <menu>
+            <group
+                android:id="@+id/group_read_state_filter"
+                android:checkableBehavior="all">
+                <item
+                    android:id="@+id/filter_show_read"
+                    android:checkable="true"
+                    android:checked="true"
+                    android:title="@string/filter_show_read" />
+                <item
+                    android:id="@+id/filter_show_unread"
+                    android:checkable="true"
+                    android:checked="true"
+                    android:title="@string/filter_show_unread" />
+            </group>
+        </menu>
+    </item>
+
+</menu>

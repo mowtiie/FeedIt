@@ -12,7 +12,9 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,6 +31,7 @@ public class FeedRepository {
     private final MutableLiveData<List<Article>> articles = new MutableLiveData<>();
     private final MutableLiveData<List<FeedTags>> feedsWithTags = new MutableLiveData<>();
     private final MutableLiveData<List<Tag>> tags = new MutableLiveData<>();
+    private final MutableLiveData<Map<Long, Integer>> unreadCounts = new MutableLiveData<>();
 
     private FeedRepository(Context context) {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(context);
@@ -48,23 +51,38 @@ public class FeedRepository {
         return articles;
     }
 
-    public void loadArticles(Long feedId, Long tagId, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
+    public void loadArticles(Long feedId, Long tagId, boolean showRead, boolean showUnread, boolean starredOnly, String searchQuery, ArticleDao.SortOrder sortOrder) {
         executor.execute(() -> {
-            List<Article> result = articleDao.getArticles(feedId, tagId, starredOnly, searchQuery, sortOrder);
+            List<Article> result = articleDao.getArticles(feedId, tagId, showRead, showUnread, starredOnly, searchQuery, sortOrder);
             articles.postValue(result);
+            unreadCounts.postValue(articleDao.getUnreadCountsByFeed());
         });
     }
 
+    public LiveData<Map<Long, Integer>> getUnreadCounts() {
+        return unreadCounts;
+    }
+
+    public void loadUnreadCounts() {
+        executor.execute(() -> unreadCounts.postValue(articleDao.getUnreadCountsByFeed()));
+    }
+
     public void setArticleRead(long articleId, boolean read) {
-        executor.execute(() -> articleDao.setRead(articleId, read));
+        executor.execute(() -> {
+            articleDao.setRead(articleId, read);
+            unreadCounts.postValue(articleDao.getUnreadCountsByFeed());
+        });
     }
 
     public void setArticleStarred(long articleId, boolean starred) {
         executor.execute(() -> articleDao.setStarred(articleId, starred));
     }
 
-    public void markAllRead(Long feedId, Long tagId) {
-        executor.execute(() -> articleDao.markAllRead(feedId, tagId));
+    public void setArticlesRead(Collection<Long> articleIds, boolean read) {
+        executor.execute(() -> {
+            articleDao.setReadForIds(articleIds, read);
+            unreadCounts.postValue(articleDao.getUnreadCountsByFeed());
+        });
     }
 
     public void getArticleById(long articleId, RepositoryCallback<Article> callback) {
@@ -84,6 +102,10 @@ public class FeedRepository {
             feedDao.setNotifyNew(feedId, enabled);
             feedsWithTags.postValue(feedDao.getAllFeedsWithTags());
         });
+    }
+
+    public void getFeedById(long feedId, RepositoryCallback<Feed> callback) {
+        executor.execute(() -> runCallback(() -> feedDao.getFeedById(feedId), callback));
     }
 
     public void saveFeed(Feed feed, List<Long> tagIds, RepositoryCallback<Long> callback) {
@@ -155,6 +177,6 @@ public class FeedRepository {
     }
 
     public void insertArticles(List<Article> newArticles, RepositoryCallback<Integer> callback) {
-        executor.execute(() -> runCallback(() -> articleDao.insertAllOrIgnore(newArticles), callback));
+        executor.execute(() -> runCallback(() -> articleDao.insertAllOrIgnore(newArticles).size(), callback));
     }
 }

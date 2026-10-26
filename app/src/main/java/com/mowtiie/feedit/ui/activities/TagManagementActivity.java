@@ -1,7 +1,6 @@
 package com.mowtiie.feedit.ui.activities;
 
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -32,7 +31,9 @@ public class TagManagementActivity extends FeedItActivity implements TagAdapter.
 
         binding = ActivityTagManagementBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        InsetsUtil.applyEdgeToEdgeInsets(binding.appBarLayout, binding.recyclerTags);
+        InsetsUtil.applyEdgeToEdgeInsets(binding.appBarLayout, binding.recyclerTags, (int) (88 * getResources().getDisplayMetrics().density));
+        InsetsUtil.applyFabInsets(binding.fabAdd);
+        binding.fabAdd.setOnClickListener(v -> showTagDialog(null));
 
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
@@ -56,19 +57,10 @@ public class TagManagementActivity extends FeedItActivity implements TagAdapter.
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_tag_management, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             finish();
-            return true;
-        } else if (id == R.id.action_add) {
-            showTagDialog(null);
             return true;
         }
         return super.onOptionsItemSelected(item);
