@@ -53,7 +53,9 @@ public class FeedParser {
             }
             depth++;
             String name = parser.getName();
-            if ("title".equals(name) && meta.getTitle() == null) {
+            if ("channel".equals(name)) {
+                depth--;
+            } else if ("title".equals(name) && meta.getTitle() == null) {
                 meta.setTitle(decodePlainTextEntities(readText(parser)));
                 depth--;
             } else if ("link".equals(name) && meta.getSiteUrl() == null) {
