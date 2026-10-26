@@ -122,6 +122,7 @@ public class SettingsActivity extends FeedItActivity {
         binding.rowArticleLayout.setOnClickListener(v -> showArticleLayoutDialog());
         binding.rowFeedNotifications.setOnClickListener(v -> startActivity(new Intent(this, FeedNotificationSettingsActivity.class)));
         binding.rowSyncFrequency.setOnClickListener(v -> showSyncFrequencyDialog());
+        binding.rowRetention.setOnClickListener(v -> showRetentionDialog());
         binding.rowBatteryOptimization.setOnClickListener(v -> handleBatteryOptimizationClick());
 
         binding.buttonImportOpml.setOnClickListener(v -> openOpmlLauncher.launch(new String[]{"*/*"}));
@@ -194,6 +195,9 @@ public class SettingsActivity extends FeedItActivity {
         viewModel.getSyncIntervalMinutes().observe(this, minutes ->
                 binding.textSyncFrequencyValue.setText(syncFrequencyDisplayName(minutes)));
 
+        viewModel.getRetentionDays().observe(this, days ->
+                binding.textRetentionValue.setText(retentionDisplayName(days)));
+
         viewModel.getOpmlBusy().observe(this, busy -> {
             binding.progressOpml.setVisibility(busy ? View.VISIBLE : View.GONE);
             binding.buttonImportOpml.setEnabled(!busy);
@@ -247,6 +251,46 @@ public class SettingsActivity extends FeedItActivity {
         } else {
             return getString(R.string.option_layout_card);
         }
+    }
+
+    private static final long[] RETENTION_DAYS_OPTIONS = {30L, 90L, 180L, 365L, 0L};
+
+    private String[] retentionLabels() {
+        return new String[]{
+                getString(R.string.option_retention_30), getString(R.string.option_retention_90),
+                getString(R.string.option_retention_180), getString(R.string.option_retention_365),
+                getString(R.string.option_retention_forever)
+        };
+    }
+
+    private String retentionDisplayName(Long days) {
+        long value = days != null ? days : 90L;
+        String[] labels = retentionLabels();
+        for (int i = 0; i < RETENTION_DAYS_OPTIONS.length; i++) {
+            if (RETENTION_DAYS_OPTIONS[i] == value) {
+                return labels[i];
+            }
+        }
+        return getString(R.string.option_retention_90);
+    }
+
+    private void showRetentionDialog() {
+        Long current = viewModel.getRetentionDays().getValue();
+        int checkedIndex = 1;
+        for (int i = 0; i < RETENTION_DAYS_OPTIONS.length; i++) {
+            if (current != null && RETENTION_DAYS_OPTIONS[i] == current) {
+                checkedIndex = i;
+                break;
+            }
+        }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_retention_title)
+                .setSingleChoiceItems(retentionLabels(), checkedIndex, (dialog, which) -> {
+                    viewModel.setRetentionDays(RETENTION_DAYS_OPTIONS[which]);
+                    dialog.dismiss();
+                })
+                .show();
     }
 
     private void showSyncFrequencyDialog() {

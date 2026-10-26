@@ -14,6 +14,11 @@
     <string name="action_sort">Sort</string>
     <string name="action_filter">Filter</string>
     <string name="action_mark_all_read">Mark all read</string>
+    <string name="action_undo">Undo</string>
+    <plurals name="snackbar_marked_read">
+        <item quantity="one">%d article marked as read</item>
+        <item quantity="other">%d articles marked as read</item>
+    </plurals>
 
     <string name="sort_dialog_title">Sort by</string>
     <string name="sort_newest">Newest first</string>
@@ -124,6 +129,13 @@
     <string name="label_startup_page">Startup page</string>
     <string name="label_sync">Sync</string>
     <string name="label_sync_frequency_title">Sync frequency</string>
+    <string name="label_retention_title">Keep articles for</string>
+    <string name="dialog_retention_title">Keep articles for</string>
+    <string name="option_retention_30">30 days</string>
+    <string name="option_retention_90">90 days</string>
+    <string name="option_retention_180">180 days</string>
+    <string name="option_retention_365">1 year</string>
+    <string name="option_retention_forever">Forever</string>
     <string name="label_battery_optimization_title">Battery optimization</string>
     <string name="battery_optimization_unrestricted">Unrestricted — background sync works reliably</string>
     <string name="battery_optimization_restricted">Restricted — background sync may be delayed. Tap to fix.</string>

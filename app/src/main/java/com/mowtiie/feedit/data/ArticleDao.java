@@ -7,12 +7,15 @@ import android.database.sqlite.SQLiteDatabase;
 import androidx.annotation.Keep;
 
 import com.mowtiie.feedit.model.Article;
-import com.mowtiie.feedit.sync.SyncLog;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class ArticleDao {
+
+    private static final int ID_CHUNK_SIZE = 500;
 
     @Keep
     public enum SortOrder {
@@ -48,18 +51,6 @@ public class ArticleDao {
         return insertedArticles;
     }
 
-    public long insertOrIgnore(Article article) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = toContentValues(article);
-        long id = db.insertWithOnConflict("articles", null, values, SQLiteDatabase.CONFLICT_IGNORE);
-        if (id == -1) {
-            SyncLog.d("dedup: already have guid=" + article.getGuid());
-        } else {
-            SyncLog.d("insert ok id=" + id + " guid=" + article.getGuid() + " title=" + article.getTitle());
-        }
-        return id;
-    }
-
     public void setRead(long articleId, boolean read) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -74,21 +65,35 @@ public class ArticleDao {
         db.update("articles", values, "id = ?", new String[]{String.valueOf(articleId)});
     }
 
-    public void markAllRead(Long feedId, Long tagId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("is_read", 1);
-        if (tagId != null) {
-            String sql = "UPDATE articles SET is_read = 1 WHERE id IN (" +
-                    "SELECT a.id FROM articles a " +
-                    "INNER JOIN feed_tags ft ON ft.feed_id = a.feed_id " +
-                    "WHERE ft.tag_id = ?)";
-            db.execSQL(sql, new Object[]{tagId});
-        } else if (feedId != null) {
-            db.update("articles", values, "feed_id = ?", new String[]{String.valueOf(feedId)});
-        } else {
-            db.update("articles", values, null, null);
+    public void setReadForIds(Collection<Long> articleIds, boolean read) {
+        if (articleIds == null || articleIds.isEmpty()) {
+            return;
         }
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        List<Long> ids = new ArrayList<>(articleIds);
+        db.beginTransaction();
+        try {
+            for (int start = 0; start < ids.size(); start += ID_CHUNK_SIZE) {
+                List<Long> chunk = ids.subList(start, Math.min(start + ID_CHUNK_SIZE, ids.size()));
+                String placeholders = String.join(",", Collections.nCopies(chunk.size(), "?"));
+                Object[] args = new Object[chunk.size() + 1];
+                args[0] = read ? 1 : 0;
+                for (int i = 0; i < chunk.size(); i++) {
+                    args[i + 1] = chunk.get(i);
+                }
+                db.execSQL("UPDATE articles SET is_read = ? WHERE id IN (" + placeholders + ")", args);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    /** Deletes unstarred articles published before the cutoff. Undated articles are never pruned. */
+    public int deleteOlderThan(long cutoffMillis) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        return db.delete("articles", "is_starred = 0 AND published_at IS NOT NULL AND published_at < ?",
+                new String[]{String.valueOf(cutoffMillis)});
     }
 
     public Article getArticleById(long articleId) {

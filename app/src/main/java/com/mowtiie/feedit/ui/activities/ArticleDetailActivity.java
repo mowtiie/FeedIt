@@ -10,7 +10,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.core.text.HtmlCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.mowtiie.feedit.R;
@@ -54,6 +53,7 @@ public class ArticleDetailActivity extends FeedItActivity {
         binding.textContent.setMovementMethod(LinkMovementMethod.getInstance());
         viewModel.load(articleId);
         viewModel.getArticle().observe(this, this::renderArticle);
+        viewModel.getRenderedContent().observe(this, binding.textContent::setText);
     }
 
     private void renderArticle(Article article) {
@@ -79,11 +79,6 @@ public class ArticleDetailActivity extends FeedItActivity {
             meta.append(date);
         }
         binding.textMeta.setText(meta.toString());
-
-        String html = article.getContent() != null ? article.getContent() : article.getSummary();
-        if (html != null) {
-            binding.textContent.setText(HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT));
-        }
 
         invalidateOptionsMenu();
     }

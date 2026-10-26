@@ -12,6 +12,7 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.model.FeedTags;
 import com.mowtiie.feedit.model.Tag;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,8 +64,8 @@ public class FeedRepository {
         executor.execute(() -> articleDao.setStarred(articleId, starred));
     }
 
-    public void markAllRead(Long feedId, Long tagId) {
-        executor.execute(() -> articleDao.markAllRead(feedId, tagId));
+    public void setArticlesRead(Collection<Long> articleIds, boolean read) {
+        executor.execute(() -> articleDao.setReadForIds(articleIds, read));
     }
 
     public void getArticleById(long articleId, RepositoryCallback<Article> callback) {

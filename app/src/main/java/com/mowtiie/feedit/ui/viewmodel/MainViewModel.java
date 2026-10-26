@@ -18,6 +18,7 @@ import com.mowtiie.feedit.util.PrefsKeys;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -148,9 +149,28 @@ public class MainViewModel extends AndroidViewModel {
         repository.setArticleStarred(article.getId(), newValue);
     }
 
-    public void markAllRead() {
-        repository.markAllRead(scopeFeedId, scopeTagId);
-        refresh();
+    /** Marks every unread article in the current view (scope, starred, search) as read and returns their ids. */
+    public List<Long> markAllRead() {
+        List<Long> ids = new ArrayList<>();
+        for (Article article : latestArticles) {
+            if (!article.isRead()) {
+                ids.add(article.getId());
+            }
+        }
+        setReadForIds(ids, true);
+        return ids;
+    }
+
+    public void markUnread(List<Long> articleIds) {
+        setReadForIds(articleIds, false);
+    }
+
+    private void setReadForIds(List<Long> articleIds, boolean read) {
+        if (articleIds.isEmpty()) {
+            return;
+        }
+        updateArticlesOptimistically(new HashSet<>(articleIds), copy -> copy.setRead(read));
+        repository.setArticlesRead(articleIds, read);
     }
 
     public void refresh() {

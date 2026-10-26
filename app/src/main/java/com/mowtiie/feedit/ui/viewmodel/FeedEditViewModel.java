@@ -18,8 +18,10 @@ import com.mowtiie.feedit.net.FeedAutoDiscovery;
 import com.mowtiie.feedit.net.FeedFetcher;
 import com.mowtiie.feedit.net.FetchResult;
 import com.mowtiie.feedit.parser.FeedParser;
-import com.mowtiie.feedit.parser.ParsedArticle;
 import com.mowtiie.feedit.parser.ParsedFeedMeta;
+
+import com.mowtiie.feedit.sync.ArticleMapper;
+import com.mowtiie.feedit.sync.RetentionPolicy;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -210,22 +212,9 @@ public class FeedEditViewModel extends AndroidViewModel {
                     finishSaved();
                     return;
                 }
-                List<Article> articles = new ArrayList<>();
-                long now = System.currentTimeMillis();
-                for (ParsedArticle pa : meta.getArticles()) {
-                    Article a = new Article();
-                    a.setFeedId(feedId);
-                    a.setGuid(pa.resolveDedupKey());
-                    a.setTitle(pa.getTitle());
-                    a.setLink(pa.getLink());
-                    a.setAuthor(pa.getAuthor());
-                    a.setSummary(pa.getSummary());
-                    a.setContent(pa.getContent());
-                    a.setImageUrl(pa.getImageUrl());
-                    a.setPublishedAt(pa.getPublishedAt());
-                    a.setFetchedAt(now);
-                    articles.add(a);
-                }
+                List<Article> articles = ArticleMapper.fromParsed(
+                        feedId, meta.getArticles(), System.currentTimeMillis(),
+                        RetentionPolicy.cutoffMillis(getApplication()));
                 repository.insertArticles(articles, new RepositoryCallback<Integer>() {
                     @Override
                     public void onComplete(Integer count) {

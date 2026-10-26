@@ -15,7 +15,6 @@ import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.net.FeedFetcher;
 import com.mowtiie.feedit.net.FetchResult;
 import com.mowtiie.feedit.parser.FeedParser;
-import com.mowtiie.feedit.parser.ParsedArticle;
 import com.mowtiie.feedit.parser.ParsedFeedMeta;
 
 import java.io.ByteArrayInputStream;
@@ -63,6 +62,7 @@ public class SyncWorker extends Worker {
         FeedFetcher fetcher = new FeedFetcher();
         FeedParser parser = new FeedParser();
 
+        Long retentionCutoff = RetentionPolicy.cutoffMillis(getApplicationContext());
         long scopedFeedId = getInputData().getLong(KEY_FEED_ID, -1L);
         List<Feed> feeds;
         if (scopedFeedId != -1L) {
@@ -90,7 +90,7 @@ public class SyncWorker extends Worker {
             for (int i = 0; i < feeds.size(); i++) {
                 Feed feed = feeds.get(i);
                 String label = "[" + (i + 1) + "/" + feeds.size() + "] " + feed.getUrl();
-                tasks.add(() -> runOneFeed(feed, label, feedDao, articleDao, fetcher, parser));
+                tasks.add(() -> runOneFeed(feed, label, feedDao, articleDao, fetcher, parser, retentionCutoff));
             }
 
             List<Future<FeedOutcome>> futures = pool.invokeAll(tasks);
@@ -125,6 +125,13 @@ public class SyncWorker extends Worker {
             pool.shutdownNow();
         }
 
+        if (retentionCutoff != null) {
+            int pruned = articleDao.deleteOlderThan(retentionCutoff);
+            if (pruned > 0) {
+                SyncLog.d("pruned " + pruned + " articles older than the retention window");
+            }
+        }
+
         if (!notifyResults.isEmpty()) {
             NotificationHelper.notifyNewArticles(getApplicationContext(), notifyResults);
         }
@@ -141,12 +148,12 @@ public class SyncWorker extends Worker {
     }
 
     private FeedOutcome runOneFeed(Feed feed, String label, FeedDao feedDao, ArticleDao articleDao,
-                                   FeedFetcher fetcher, FeedParser parser) {
+                                   FeedFetcher fetcher, FeedParser parser, Long retentionCutoff) {
         long feedStart = System.currentTimeMillis();
         SyncLog.d("--> " + label);
         List<FeedSyncResult> collected = new ArrayList<>(1);
         try {
-            int outcome = syncOneFeed(feed, label, feedDao, articleDao, fetcher, parser, collected);
+            int outcome = syncOneFeed(feed, label, feedDao, articleDao, fetcher, parser, retentionCutoff, collected);
             long elapsed = System.currentTimeMillis() - feedStart;
             if (outcome == OUTCOME_NOT_MODIFIED) {
                 SyncLog.d("<-- " + label + " : 304 not-modified (" + elapsed + "ms)");
@@ -165,7 +172,7 @@ public class SyncWorker extends Worker {
 
     private int syncOneFeed(Feed feed, String label, FeedDao feedDao, ArticleDao articleDao,
                             FeedFetcher fetcher, FeedParser parser,
-                            List<FeedSyncResult> notifyResults) throws Exception {
+                            Long retentionCutoff, List<FeedSyncResult> notifyResults) throws Exception {
         long t0 = System.currentTimeMillis();
         FetchResult fetchResult = fetcher.fetch(feed.getUrl(), feed.getEtag(), feed.getLastModified());
         SyncLog.d("    " + label + " fetch() returned in " + (System.currentTimeMillis() - t0) + "ms"
@@ -194,22 +201,8 @@ public class SyncWorker extends Worker {
         }
         feedDao.updateFeed(feed);
 
-        List<Article> parsedArticles = new ArrayList<>();
-        long now = System.currentTimeMillis();
-        for (ParsedArticle parsedArticle : meta.getArticles()) {
-            Article article = new Article();
-            article.setFeedId(feed.getId());
-            article.setGuid(parsedArticle.resolveDedupKey());
-            article.setTitle(parsedArticle.getTitle());
-            article.setLink(parsedArticle.getLink());
-            article.setAuthor(parsedArticle.getAuthor());
-            article.setSummary(parsedArticle.getSummary());
-            article.setContent(parsedArticle.getContent());
-            article.setImageUrl(parsedArticle.getImageUrl());
-            article.setPublishedAt(parsedArticle.getPublishedAt());
-            article.setFetchedAt(now);
-            parsedArticles.add(article);
-        }
+        List<Article> parsedArticles = ArticleMapper.fromParsed(
+                feed.getId(), meta.getArticles(), System.currentTimeMillis(), retentionCutoff);
 
         long insertStart = System.currentTimeMillis();
         List<Article> newArticles = articleDao.insertAllOrIgnore(parsedArticles);

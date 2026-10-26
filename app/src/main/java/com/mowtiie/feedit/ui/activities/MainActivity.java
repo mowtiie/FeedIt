@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.work.WorkManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.crash.CrashReporter;
 import com.mowtiie.feedit.data.ArticleDao;
@@ -356,12 +357,23 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             showSortDialog();
             return true;
         } else if (id == R.id.action_mark_all_read) {
-            viewModel.markAllRead();
+            showMarkedReadSnackbar(viewModel.markAllRead());
             return true;
         } else if (id == R.id.filter_show_read || id == R.id.filter_show_unread) {
             return handleReadStateFilterClick(item);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showMarkedReadSnackbar(List<Long> markedIds) {
+        if (markedIds.isEmpty()) {
+            return;
+        }
+        Snackbar.make(binding.getRoot(),
+                        getResources().getQuantityString(R.plurals.snackbar_marked_read, markedIds.size(), markedIds.size()),
+                        Snackbar.LENGTH_LONG)
+                .setAction(R.string.action_undo, v -> viewModel.markUnread(markedIds))
+                .show();
     }
 
     private boolean handleReadStateFilterClick(MenuItem item) {
