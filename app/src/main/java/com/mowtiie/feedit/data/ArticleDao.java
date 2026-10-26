@@ -133,8 +133,9 @@ public class ArticleDao {
         }
 
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            conditions.add("(a.title LIKE ? OR a.content LIKE ?)");
-            String like = "%" + searchQuery.trim() + "%";
+            conditions.add("(a.title LIKE ? ESCAPE '\\' OR a.content LIKE ? ESCAPE '\\')");
+            String escaped = searchQuery.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+            String like = "%" + escaped + "%";
             args.add(like);
             args.add(like);
         }

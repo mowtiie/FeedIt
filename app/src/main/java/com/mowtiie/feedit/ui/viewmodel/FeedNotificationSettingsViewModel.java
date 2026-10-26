@@ -13,6 +13,7 @@ import com.mowtiie.feedit.model.FeedTags;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class FeedNotificationSettingsViewModel extends AndroidViewModel {
 
@@ -69,10 +70,10 @@ public class FeedNotificationSettingsViewModel extends AndroidViewModel {
         List<FeedTags> result = new ArrayList<>(latestFeeds);
 
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            String needle = searchQuery.trim().toLowerCase();
+            String needle = searchQuery.trim().toLowerCase(Locale.getDefault());
             result.removeIf(item -> {
                 String title = item.getFeed().getTitle();
-                return title == null || !title.toLowerCase().contains(needle);
+                return title == null || !title.toLowerCase(Locale.getDefault()).contains(needle);
             });
         }
 

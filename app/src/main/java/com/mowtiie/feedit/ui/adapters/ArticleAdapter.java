@@ -1,5 +1,6 @@
 package com.mowtiie.feedit.ui.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.TypedValue;
@@ -69,6 +70,7 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
         this.listener = listener;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setLayoutStyle(String style) {
         if (!style.equals(layoutStyle)) {
             layoutStyle = style;

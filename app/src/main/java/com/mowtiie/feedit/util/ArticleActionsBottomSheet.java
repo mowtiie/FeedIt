@@ -1,5 +1,6 @@
 package com.mowtiie.feedit.util;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -19,6 +20,7 @@ public final class ArticleActionsBottomSheet {
     private ArticleActionsBottomSheet() {
     }
 
+    @SuppressLint("InflateParams")
     public static void show(Activity activity, Article article, MainViewModel viewModel) {
         BottomSheetDialog dialog = new BottomSheetDialog(activity);
         View sheetView = activity.getLayoutInflater().inflate(R.layout.bottom_sheet_article_actions, null, false);
