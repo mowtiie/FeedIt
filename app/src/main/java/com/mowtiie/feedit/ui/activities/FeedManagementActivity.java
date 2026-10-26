@@ -2,7 +2,6 @@ package com.mowtiie.feedit.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -31,7 +30,9 @@ public class FeedManagementActivity extends FeedItActivity implements FeedAdapte
 
         binding = ActivityFeedManagementBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        InsetsUtil.applyEdgeToEdgeInsets(binding.appBarLayout, binding.recyclerFeeds);
+        InsetsUtil.applyEdgeToEdgeInsets(binding.appBarLayout, binding.recyclerFeeds, (int) (88 * getResources().getDisplayMetrics().density));
+        InsetsUtil.applyFabInsets(binding.fabAdd);
+        binding.fabAdd.setOnClickListener(v -> startActivity(new Intent(this, AddEditFeedActivity.class)));
 
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
@@ -61,19 +62,10 @@ public class FeedManagementActivity extends FeedItActivity implements FeedAdapte
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_feed_management, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             finish();
-            return true;
-        } else if (id == R.id.action_add) {
-            startActivity(new Intent(this, AddEditFeedActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);

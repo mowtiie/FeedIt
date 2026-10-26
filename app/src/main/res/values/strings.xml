@@ -25,7 +25,6 @@
     <string name="option_text_size_default">Default</string>
     <string name="option_text_size_large">Large</string>
     <string name="option_text_size_xlarge">Extra large</string>
-    <string name="nav_section_feeds">Feeds</string>
     <string name="nav_section_tags">Tags</string>
     <string name="hint_search_in">Search in %1$s</string>
     <string name="empty_state_no_feeds_caption">No feeds yet. Add one or import an OPML file.</string>

@@ -239,10 +239,6 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             viewModel.selectTag(id - TAG_ITEM_BASE);
             setTitle(item.getTitle());
             isOnAllScope = true;
-        } else if (id >= FEED_ITEM_BASE) {
-            viewModel.selectFeed(id - FEED_ITEM_BASE);
-            setTitle(item.getTitle());
-            isOnAllScope = true;
         }
         selectedNavId = id;
         updateSearchHint();
@@ -354,22 +350,6 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         }
         setBadge(menu.findItem(R.id.nav_all), totalUnread);
 
-        MenuItem feedsSection = menu.findItem(R.id.nav_section_feeds);
-        feedsSection.setVisible(!drawerFeeds.isEmpty());
-        Menu feedsMenu = feedsSection.getSubMenu();
-        feedsMenu.removeGroup(R.id.group_feeds);
-        for (FeedTags ft : drawerFeeds) {
-            Feed feed = ft.getFeed();
-            String title = feed.getTitle() != null ? feed.getTitle() : feed.getUrl();
-            MenuItem item = feedsMenu.add(R.id.group_feeds, FEED_ITEM_BASE + (int) feed.getId(), Menu.NONE, title);
-            item.setIcon(R.drawable.ic_rss_feed);
-            item.setCheckable(true);
-            setBadge(item, countOrZero(feed.getId()));
-            if (item.getItemId() == selectedNavId) {
-                setTitle(title);
-            }
-        }
-
         MenuItem tagsSection = menu.findItem(R.id.nav_section_tags);
         tagsSection.setVisible(!drawerTags.isEmpty());
         Menu tagsMenu = tagsSection.getSubMenu();
@@ -384,10 +364,35 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             }
         }
 
-        if (menu.findItem(selectedNavId) != null) {
+        if (isFeedScope(selectedNavId)) {
+            for (FeedTags ft : drawerFeeds) {
+                if (FEED_ITEM_BASE + (int) ft.getFeed().getId() == selectedNavId) {
+                    Feed feed = ft.getFeed();
+                    setTitle(feed.getTitle() != null ? feed.getTitle() : feed.getUrl());
+                }
+            }
+            uncheckDrawerItems();
+        } else if (menu.findItem(selectedNavId) != null) {
             binding.navView.setCheckedItem(selectedNavId);
         }
         updateSearchHint();
+    }
+
+    private static boolean isFeedScope(int navId) {
+        return navId >= FEED_ITEM_BASE && navId < TAG_ITEM_BASE;
+    }
+
+    private void uncheckDrawerItems() {
+        Menu menu = binding.navView.getMenu();
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            item.setChecked(false);
+            if (item.hasSubMenu()) {
+                for (int j = 0; j < item.getSubMenu().size(); j++) {
+                    item.getSubMenu().getItem(j).setChecked(false);
+                }
+            }
+        }
     }
 
     private int countOrZero(long feedId) {
