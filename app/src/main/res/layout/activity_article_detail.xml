@@ -81,4 +81,39 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <LinearLayout
+        android:id="@+id/bar_article_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?attr/colorSurfaceContainer"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_previous_article"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/action_previous_article"
+            app:icon="@drawable/ic_arrow_upward"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_next_article"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/action_next_article"
+            app:icon="@drawable/ic_arrow_downward"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
+
+    </LinearLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

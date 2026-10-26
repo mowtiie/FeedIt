@@ -3,18 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_previous"
-        android:icon="@drawable/ic_arrow_upward"
-        android:title="@string/action_previous_article"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_next"
-        android:icon="@drawable/ic_arrow_downward"
-        android:title="@string/action_next_article"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_star"
         android:icon="@drawable/ic_star_filled"
         android:title="@string/action_star"

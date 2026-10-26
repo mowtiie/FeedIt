@@ -10,10 +10,14 @@ import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
@@ -87,6 +91,7 @@ public class ArticleDetailActivity extends FeedItActivity {
 
         binding.textContent.setMovementMethod(LinkMovementMethod.getInstance());
         applyReaderTextSize();
+        setupNavigationBar();
         viewModel.load(articleId);
         viewModel.getArticle().observe(this, this::renderArticle);
         viewModel.getRenderedContent().observe(this, binding.textContent::setText);
@@ -112,6 +117,33 @@ public class ArticleDetailActivity extends FeedItActivity {
         }
     }
 
+    private void setupNavigationBar() {
+        boolean canNavigate = articleIds != null && articleIds.length > 1;
+        binding.barArticleNavigation.setVisibility(canNavigate ? View.VISIBLE : View.GONE);
+        binding.buttonPreviousArticle.setOnClickListener(v -> step(-1));
+        binding.buttonNextArticle.setOnClickListener(v -> step(1));
+        ViewCompat.setOnApplyWindowInsetsListener(binding.barArticleNavigation, (v, windowInsets) -> {
+            Insets bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), v.getPaddingTop() + bars.bottom);
+            return windowInsets;
+        });
+        // Keep the last lines of text clear of the bar.
+        binding.barArticleNavigation.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) binding.scrollContent.getLayoutParams();
+            int height = v.getVisibility() == View.VISIBLE ? bottom - top : 0;
+            if (params.bottomMargin != height) {
+                params.bottomMargin = height;
+                binding.scrollContent.setLayoutParams(params);
+            }
+        });
+    }
+
+    private void updateNavigationButtons() {
+        int index = ArticleNavigation.indexOf(articleIds, currentArticleId);
+        binding.buttonPreviousArticle.setEnabled(ArticleNavigation.neighbor(articleIds, index, -1) != -1L);
+        binding.buttonNextArticle.setEnabled(ArticleNavigation.neighbor(articleIds, index, 1) != -1L);
+    }
+
     private void step(int delta) {
         long target = ArticleNavigation.neighbor(articleIds, ArticleNavigation.indexOf(articleIds, currentArticleId), delta);
         if (target == -1L) {
@@ -129,6 +161,7 @@ public class ArticleDetailActivity extends FeedItActivity {
         }
 
         currentArticleId = article.getId();
+        updateNavigationButtons();
         if (article.getTitle() != null) {
             setTitle(article.getTitle());
             binding.collapsingToolbar.setTitle(article.getTitle());
@@ -185,15 +218,6 @@ public class ArticleDetailActivity extends FeedItActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        int index = ArticleNavigation.indexOf(articleIds, currentArticleId);
-        boolean canNavigate = articleIds != null && articleIds.length > 1 && index >= 0;
-        MenuItem previous = menu.findItem(R.id.action_previous);
-        MenuItem next = menu.findItem(R.id.action_next);
-        previous.setVisible(canNavigate);
-        next.setVisible(canNavigate);
-        previous.setEnabled(ArticleNavigation.neighbor(articleIds, index, -1) != -1L);
-        next.setEnabled(ArticleNavigation.neighbor(articleIds, index, 1) != -1L);
-
         Article article = viewModel.getArticle().getValue();
         if (article != null) {
             menu.findItem(R.id.action_star).setIcon(article.isStarred()
@@ -211,12 +235,6 @@ public class ArticleDetailActivity extends FeedItActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             finish();
-            return true;
-        } else if (id == R.id.action_previous) {
-            step(-1);
-            return true;
-        } else if (id == R.id.action_next) {
-            step(1);
             return true;
         } else if (id == R.id.action_star) {
             viewModel.toggleStarred();

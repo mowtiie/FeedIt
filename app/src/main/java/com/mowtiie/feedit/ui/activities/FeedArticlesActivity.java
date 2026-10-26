@@ -15,7 +15,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
@@ -135,7 +134,7 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         adapter = new ArticleAdapter(this);
         binding.recyclerArticles.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerArticles.setAdapter(adapter);
-        new ItemTouchHelper(new ArticleSwipeCallback(this, adapter, new ArticleSwipeCallback.Actions() {
+        ArticleSwipeCallback.attach(binding.recyclerArticles, adapter, new ArticleSwipeCallback.Actions() {
             @Override
             public void onSwipeToggleRead(ArticleUiState item) {
                 viewModel.toggleRead(item.getArticle());
@@ -145,7 +144,7 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
             public void onSwipeToggleStar(ArticleUiState item) {
                 viewModel.toggleStarred(item.getArticle());
             }
-        })).attachToRecyclerView(binding.recyclerArticles);
+        });
     }
 
     private void observeViewModel() {

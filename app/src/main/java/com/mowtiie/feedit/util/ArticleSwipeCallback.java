@@ -11,6 +11,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.google.android.material.color.MaterialColors;
 import com.mowtiie.feedit.R;
@@ -32,6 +33,23 @@ public class ArticleSwipeCallback extends ItemTouchHelper.SimpleCallback {
     private final int readBackground;
     private final int starBackground;
     private final int iconMargin;
+    private RecyclerView recyclerView;
+    private ItemTouchHelper helper;
+
+    /**
+     * Attaches swipe handling to the list. Change animations are turned off so a toggled row is
+     * rebound in place instead of crossfading with its swiped-out copy.
+     */
+    public static void attach(RecyclerView recyclerView, ArticleAdapter adapter, Actions actions) {
+        RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
+        ArticleSwipeCallback callback = new ArticleSwipeCallback(recyclerView.getContext(), adapter, actions);
+        callback.recyclerView = recyclerView;
+        callback.helper = new ItemTouchHelper(callback);
+        callback.helper.attachToRecyclerView(recyclerView);
+    }
 
     public ArticleSwipeCallback(Context context, ArticleAdapter adapter, Actions actions) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
@@ -75,8 +93,19 @@ public class ArticleSwipeCallback extends ItemTouchHelper.SimpleCallback {
         } else {
             actions.onSwipeToggleStar(item);
         }
-        // Snap the row back; the list diff then rebinds or removes it.
+        // The row stays in the list, but ItemTouchHelper only cleans up a swiped row when it is
+        // removed, so it would stay drawn off-screen. Re-attaching forces that cleanup.
         adapter.notifyItemChanged(position);
+        recyclerView.post(() -> {
+            helper.attachToRecyclerView(null);
+            helper.attachToRecyclerView(recyclerView);
+        });
+    }
+
+    @Override
+    public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+        super.clearView(recyclerView, viewHolder);
+        viewHolder.itemView.setTranslationX(0f);
     }
 
     @Override

@@ -11,6 +11,8 @@ import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,7 +25,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.work.WorkManager;
 
@@ -256,7 +257,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         adapter = new ArticleAdapter(this);
         binding.recyclerArticles.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerArticles.setAdapter(adapter);
-        new ItemTouchHelper(new ArticleSwipeCallback(this, adapter, new ArticleSwipeCallback.Actions() {
+        ArticleSwipeCallback.attach(binding.recyclerArticles, adapter, new ArticleSwipeCallback.Actions() {
             @Override
             public void onSwipeToggleRead(ArticleUiState item) {
                 viewModel.toggleRead(item.getArticle());
@@ -266,7 +267,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             public void onSwipeToggleStar(ArticleUiState item) {
                 viewModel.toggleStarred(item.getArticle());
             }
-        })).attachToRecyclerView(binding.recyclerArticles);
+        });
     }
 
     private void setupSwipeRefresh() {
@@ -416,7 +417,10 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             return;
         }
         if (item.getActionView() == null) {
-            item.setActionView(R.layout.view_nav_badge);
+            TextView badge = (TextView) getLayoutInflater().inflate(R.layout.view_nav_badge, binding.navView, false);
+            badge.setLayoutParams(new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            item.setActionView(badge);
         }
         ((TextView) item.getActionView()).setText(String.valueOf(count));
     }
