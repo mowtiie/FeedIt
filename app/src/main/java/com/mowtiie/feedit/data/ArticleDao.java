@@ -104,6 +104,13 @@ public class ArticleDao {
         return counts;
     }
 
+    public int getStarredCount() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM articles WHERE is_starred = 1", null)) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        }
+    }
+
     /** Deletes unstarred articles published before the cutoff. Undated articles are never pruned. */
     public int deleteOlderThan(long cutoffMillis) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();

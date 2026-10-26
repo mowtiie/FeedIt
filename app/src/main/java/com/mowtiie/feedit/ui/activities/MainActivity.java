@@ -66,11 +66,12 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     private boolean skipNextResumeRefresh = true;
 
     private static final int FEED_ITEM_BASE = 0x10000000;
-    private static final int TAG_ITEM_BASE = 0x20000000;
+    private static final int FEED_ITEM_END = 0x20000000;
     private int selectedNavId = R.id.nav_all;
     private List<FeedTags> drawerFeeds = Collections.emptyList();
     private List<Tag> drawerTags = Collections.emptyList();
     private Map<Long, Integer> unreadCounts = new HashMap<>();
+    private int starredCount;
 
     private final ActivityResultLauncher<String> requestNotificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -242,10 +243,6 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             viewModel.selectStarred();
             setTitle(R.string.nav_starred);
             isOnAllScope = false;
-        } else if (id >= TAG_ITEM_BASE) {
-            viewModel.selectTag(id - TAG_ITEM_BASE);
-            setTitle(item.getTitle());
-            isOnAllScope = true;
         }
         selectedNavId = id;
         updateSearchHint();
@@ -347,6 +344,10 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             unreadCounts = counts;
             rebuildDrawerLists();
         });
+        viewModel.getStarredCount().observe(this, count -> {
+            starredCount = count != null ? count : 0;
+            rebuildDrawerLists();
+        });
     }
 
     private void rebuildDrawerLists() {
@@ -356,20 +357,9 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
             totalUnread += count;
         }
         setBadge(menu.findItem(R.id.nav_all), totalUnread);
-
-        MenuItem tagsSection = menu.findItem(R.id.nav_section_tags);
-        tagsSection.setVisible(!drawerTags.isEmpty());
-        Menu tagsMenu = tagsSection.getSubMenu();
-        tagsMenu.removeGroup(R.id.group_tags);
-        for (Tag tag : drawerTags) {
-            MenuItem item = tagsMenu.add(R.id.group_tags, TAG_ITEM_BASE + (int) tag.getId(), Menu.NONE, tag.getName());
-            item.setIcon(R.drawable.ic_tag);
-            item.setCheckable(true);
-            setBadge(item, tagUnreadCount(tag.getId()));
-            if (item.getItemId() == selectedNavId) {
-                setTitle(tag.getName());
-            }
-        }
+        setBadge(menu.findItem(R.id.nav_starred), starredCount);
+        setBadge(menu.findItem(R.id.nav_manage_feeds), drawerFeeds.size());
+        setBadge(menu.findItem(R.id.nav_manage_tags), drawerTags.size());
 
         if (isFeedScope(selectedNavId)) {
             for (FeedTags ft : drawerFeeds) {
@@ -386,7 +376,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     }
 
     private static boolean isFeedScope(int navId) {
-        return navId >= FEED_ITEM_BASE && navId < TAG_ITEM_BASE;
+        return navId >= FEED_ITEM_BASE && navId < FEED_ITEM_END;
     }
 
     private void uncheckDrawerItems() {
@@ -400,24 +390,6 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
                 }
             }
         }
-    }
-
-    private int countOrZero(long feedId) {
-        Integer count = unreadCounts.get(feedId);
-        return count != null ? count : 0;
-    }
-
-    private int tagUnreadCount(long tagId) {
-        int total = 0;
-        for (FeedTags ft : drawerFeeds) {
-            for (Tag tag : ft.getTags()) {
-                if (tag.getId() == tagId) {
-                    total += countOrZero(ft.getFeed().getId());
-                    break;
-                }
-            }
-        }
-        return total;
     }
 
     private void setBadge(MenuItem item, int count) {

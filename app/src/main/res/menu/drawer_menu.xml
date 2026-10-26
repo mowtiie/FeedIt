@@ -19,15 +19,6 @@
         </menu>
     </item>
 
-    <item
-        android:id="@+id/nav_section_tags"
-        android:title="@string/nav_section_tags"
-        android:visible="false">
-        <menu>
-            <group android:id="@+id/group_tags" />
-        </menu>
-    </item>
-
     <item android:title="@string/nav_section_manage">
         <menu>
             <group android:id="@+id/group_manage">

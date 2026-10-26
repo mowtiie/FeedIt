@@ -32,6 +32,7 @@ public class FeedRepository {
     private final MutableLiveData<List<FeedTags>> feedsWithTags = new MutableLiveData<>();
     private final MutableLiveData<List<Tag>> tags = new MutableLiveData<>();
     private final MutableLiveData<Map<Long, Integer>> unreadCounts = new MutableLiveData<>();
+    private final MutableLiveData<Integer> starredCount = new MutableLiveData<>();
 
     private FeedRepository(Context context) {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(context);
@@ -56,6 +57,7 @@ public class FeedRepository {
             List<Article> result = articleDao.getArticles(feedId, tagId, showRead, showUnread, starredOnly, searchQuery, sortOrder);
             articles.postValue(result);
             unreadCounts.postValue(articleDao.getUnreadCountsByFeed());
+            starredCount.postValue(articleDao.getStarredCount());
         });
     }
 
@@ -63,8 +65,15 @@ public class FeedRepository {
         return unreadCounts;
     }
 
+    public LiveData<Integer> getStarredCount() {
+        return starredCount;
+    }
+
     public void loadUnreadCounts() {
-        executor.execute(() -> unreadCounts.postValue(articleDao.getUnreadCountsByFeed()));
+        executor.execute(() -> {
+            unreadCounts.postValue(articleDao.getUnreadCountsByFeed());
+            starredCount.postValue(articleDao.getStarredCount());
+        });
     }
 
     public void setArticleRead(long articleId, boolean read) {
@@ -75,7 +84,10 @@ public class FeedRepository {
     }
 
     public void setArticleStarred(long articleId, boolean starred) {
-        executor.execute(() -> articleDao.setStarred(articleId, starred));
+        executor.execute(() -> {
+            articleDao.setStarred(articleId, starred);
+            starredCount.postValue(articleDao.getStarredCount());
+        });
     }
 
     public void setArticlesRead(Collection<Long> articleIds, boolean read) {

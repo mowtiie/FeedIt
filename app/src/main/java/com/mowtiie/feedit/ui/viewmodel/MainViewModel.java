@@ -85,13 +85,6 @@ public class MainViewModel extends AndroidViewModel {
         refresh();
     }
 
-    public void selectTag(long tagId) {
-        scopeFeedId = null;
-        scopeTagId = tagId;
-        starredOnly = false;
-        refresh();
-    }
-
     public LiveData<List<FeedTags>> getFeeds() {
         return repository.getFeedsWithTags();
     }
@@ -102,6 +95,10 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Map<Long, Integer>> getUnreadCounts() {
         return repository.getUnreadCounts();
+    }
+
+    public LiveData<Integer> getStarredCount() {
+        return repository.getStarredCount();
     }
 
     public boolean isFeedsLoaded() {
