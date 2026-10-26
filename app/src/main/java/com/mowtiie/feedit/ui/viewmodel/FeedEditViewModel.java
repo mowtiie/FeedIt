@@ -21,6 +21,7 @@ import com.mowtiie.feedit.parser.FeedParser;
 import com.mowtiie.feedit.parser.ParsedFeedMeta;
 
 import com.mowtiie.feedit.sync.ArticleMapper;
+import com.mowtiie.feedit.util.PrefsKeys;
 import com.mowtiie.feedit.sync.RetentionPolicy;
 
 import java.io.ByteArrayInputStream;
@@ -54,6 +55,8 @@ public class FeedEditViewModel extends AndroidViewModel {
         super(application);
         repository = FeedRepository.getInstance(application);
         workingFeed.setCreatedAt(System.currentTimeMillis());
+        workingFeed.setOpenMode(application.getSharedPreferences(PrefsKeys.PREFS_NAME, Application.MODE_PRIVATE)
+                .getInt(PrefsKeys.DEFAULT_OPEN_MODE, Feed.OPEN_MODE_IN_APP));
 
         repository.loadTags();
         repository.loadFeedsWithTags();
@@ -137,6 +140,10 @@ public class FeedEditViewModel extends AndroidViewModel {
 
     public void setNotifyNew(boolean value) {
         workingFeed.setNotifyNew(value);
+    }
+
+    public int getInitialOpenMode() {
+        return workingFeed.getOpenMode();
     }
 
     public void setOpenMode(int mode) {

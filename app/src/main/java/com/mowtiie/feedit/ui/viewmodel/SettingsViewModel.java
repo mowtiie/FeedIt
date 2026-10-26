@@ -44,6 +44,8 @@ public class SettingsViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> wifiOnly = new MutableLiveData<>();
     private final MutableLiveData<Long> syncIntervalMinutes = new MutableLiveData<>();
     private final MutableLiveData<Long> retentionDays = new MutableLiveData<>();
+    private final MutableLiveData<Integer> defaultOpenMode = new MutableLiveData<>();
+    private final MutableLiveData<String> readerTextSize = new MutableLiveData<>();
     private final MutableLiveData<Boolean> notificationsEnabled = new MutableLiveData<>();
     private final MutableLiveData<String> darkMode = new MutableLiveData<>();
     private final MutableLiveData<String> startupPage = new MutableLiveData<>();
@@ -59,6 +61,8 @@ public class SettingsViewModel extends AndroidViewModel {
         wifiOnly.setValue(prefs.getBoolean(PrefsKeys.SYNC_WIFI_ONLY, false));
         syncIntervalMinutes.setValue(prefs.getLong(PrefsKeys.SYNC_INTERVAL_MINUTES, 60L));
         retentionDays.setValue(prefs.getLong(PrefsKeys.RETENTION_DAYS, PrefsKeys.DEFAULT_RETENTION_DAYS));
+        defaultOpenMode.setValue(prefs.getInt(PrefsKeys.DEFAULT_OPEN_MODE, Feed.OPEN_MODE_IN_APP));
+        readerTextSize.setValue(prefs.getString(PrefsKeys.READER_TEXT_SIZE, PrefsKeys.TEXT_SIZE_DEFAULT));
         notificationsEnabled.setValue(prefs.getBoolean(PrefsKeys.NOTIFICATIONS_ENABLED, true));
         darkMode.setValue(prefs.getString(PrefsKeys.DARK_MODE, "system"));
         startupPage.setValue(prefs.getString(PrefsKeys.STARTUP_PAGE, PrefsKeys.STARTUP_PAGE_ALL));
@@ -69,6 +73,24 @@ public class SettingsViewModel extends AndroidViewModel {
 
     public LiveData<Boolean> getWifiOnly() {
         return wifiOnly;
+    }
+
+    public LiveData<Integer> getDefaultOpenMode() {
+        return defaultOpenMode;
+    }
+
+    public void setDefaultOpenMode(int mode) {
+        prefs.edit().putInt(PrefsKeys.DEFAULT_OPEN_MODE, mode).apply();
+        defaultOpenMode.setValue(mode);
+    }
+
+    public LiveData<String> getReaderTextSize() {
+        return readerTextSize;
+    }
+
+    public void setReaderTextSize(String size) {
+        prefs.edit().putString(PrefsKeys.READER_TEXT_SIZE, size).apply();
+        readerTextSize.setValue(size);
     }
 
     public LiveData<Long> getRetentionDays() {
@@ -230,6 +252,7 @@ public class SettingsViewModel extends AndroidViewModel {
                     }
 
                     Feed feed = new Feed();
+                    feed.setOpenMode(prefs.getInt(PrefsKeys.DEFAULT_OPEN_MODE, Feed.OPEN_MODE_IN_APP));
                     feed.setUrl(entry.getFeedUrl());
                     feed.setTitle(entry.getTitle());
                     feed.setSiteUrl(entry.getSiteUrl());

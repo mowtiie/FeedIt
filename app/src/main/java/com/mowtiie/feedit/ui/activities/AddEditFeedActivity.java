@@ -58,7 +58,9 @@ public class AddEditFeedActivity extends FeedItActivity {
             setTitle(R.string.title_add_feed);
         }
 
-        binding.toggleOpenMode.check(R.id.button_open_in_app);
+        binding.toggleOpenMode.check(viewModel.getInitialOpenMode() == Feed.OPEN_MODE_BROWSER
+                ? R.id.button_open_browser
+                : R.id.button_open_in_app);
         setupListeners();
         observeViewModel();
     }

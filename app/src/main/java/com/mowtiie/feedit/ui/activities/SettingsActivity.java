@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowtiie.feedit.R;
+import com.mowtiie.feedit.model.Feed;
 import com.mowtiie.feedit.databinding.ActivitySettingsBinding;
 import com.mowtiie.feedit.ui.viewmodel.SettingsViewModel;
 import com.mowtiie.feedit.util.BatteryOptimizationHelper;
@@ -123,6 +124,8 @@ public class SettingsActivity extends FeedItActivity {
         binding.rowFeedNotifications.setOnClickListener(v -> startActivity(new Intent(this, FeedNotificationSettingsActivity.class)));
         binding.rowSyncFrequency.setOnClickListener(v -> showSyncFrequencyDialog());
         binding.rowRetention.setOnClickListener(v -> showRetentionDialog());
+        binding.rowDefaultOpenMode.setOnClickListener(v -> showDefaultOpenModeDialog());
+        binding.rowReaderTextSize.setOnClickListener(v -> showReaderTextSizeDialog());
         binding.rowBatteryOptimization.setOnClickListener(v -> handleBatteryOptimizationClick());
 
         binding.buttonImportOpml.setOnClickListener(v -> openOpmlLauncher.launch(new String[]{"*/*"}));
@@ -195,6 +198,12 @@ public class SettingsActivity extends FeedItActivity {
         viewModel.getSyncIntervalMinutes().observe(this, minutes ->
                 binding.textSyncFrequencyValue.setText(syncFrequencyDisplayName(minutes)));
 
+        viewModel.getDefaultOpenMode().observe(this, mode ->
+                binding.textDefaultOpenModeValue.setText(mode == Feed.OPEN_MODE_BROWSER
+                        ? R.string.option_open_browser
+                        : R.string.option_open_in_app));
+        viewModel.getReaderTextSize().observe(this, size ->
+                binding.textReaderTextSizeValue.setText(readerTextSizeLabels()[readerTextSizeIndex(size)]));
         viewModel.getRetentionDays().observe(this, days ->
                 binding.textRetentionValue.setText(retentionDisplayName(days)));
 
@@ -251,6 +260,50 @@ public class SettingsActivity extends FeedItActivity {
         } else {
             return getString(R.string.option_layout_card);
         }
+    }
+
+    private static final String[] READER_TEXT_SIZE_VALUES = {
+            PrefsKeys.TEXT_SIZE_SMALL, PrefsKeys.TEXT_SIZE_DEFAULT,
+            PrefsKeys.TEXT_SIZE_LARGE, PrefsKeys.TEXT_SIZE_XLARGE
+    };
+
+    private String[] readerTextSizeLabels() {
+        return new String[]{
+                getString(R.string.option_text_size_small), getString(R.string.option_text_size_default),
+                getString(R.string.option_text_size_large), getString(R.string.option_text_size_xlarge)
+        };
+    }
+
+    private int readerTextSizeIndex(String size) {
+        for (int i = 0; i < READER_TEXT_SIZE_VALUES.length; i++) {
+            if (READER_TEXT_SIZE_VALUES[i].equals(size)) {
+                return i;
+            }
+        }
+        return 1;
+    }
+
+    private void showReaderTextSizeDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_reader_text_size_title)
+                .setSingleChoiceItems(readerTextSizeLabels(), readerTextSizeIndex(viewModel.getReaderTextSize().getValue()), (dialog, which) -> {
+                    viewModel.setReaderTextSize(READER_TEXT_SIZE_VALUES[which]);
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    private void showDefaultOpenModeDialog() {
+        String[] labels = {getString(R.string.option_open_in_app), getString(R.string.option_open_browser)};
+        Integer current = viewModel.getDefaultOpenMode().getValue();
+        int checked = current != null && current == Feed.OPEN_MODE_BROWSER ? 1 : 0;
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_default_open_mode_title)
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    viewModel.setDefaultOpenMode(which == 1 ? Feed.OPEN_MODE_BROWSER : Feed.OPEN_MODE_IN_APP);
+                    dialog.dismiss();
+                })
+                .show();
     }
 
     private static final long[] RETENTION_DAYS_OPTIONS = {30L, 90L, 180L, 365L, 0L};

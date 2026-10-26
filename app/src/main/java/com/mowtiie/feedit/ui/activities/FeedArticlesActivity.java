@@ -267,9 +267,7 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         if (item.getFeedOpenMode() == Feed.OPEN_MODE_BROWSER) {
             openInBrowser(item.getArticle().getLink());
         } else {
-            Intent intent = new Intent(this, ArticleDetailActivity.class);
-            intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_ID, item.getArticle().getId());
-            startActivity(intent);
+            startActivity(ArticleDetailActivity.newIntent(this, adapter.getCurrentList(), item.getArticle().getId()));
         }
     }
 

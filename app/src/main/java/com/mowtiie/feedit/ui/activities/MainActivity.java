@@ -113,6 +113,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         setupDrawer();
         setupBackNavigation();
         setupRecyclerView();
+        setupFilterChips();
         setupSwipeRefresh();
         observeViewModel();
 
@@ -135,6 +136,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         super.onResume();
         String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_MAGAZINE);
         adapter.setLayoutStyle(layoutStyle);
+        syncFilterChips();
         viewModel.refresh();
     }
 
@@ -155,6 +157,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         }
 
         binding.navView.setCheckedItem(selectedNavId);
+        syncFilterChips();
     }
 
     private void maybePromptForNotifications() {
@@ -242,6 +245,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         }
         selectedNavId = id;
         updateSearchHint();
+        syncFilterChips();
         invalidateOptionsMenu();
 
         binding.drawerLayout.closeDrawer(GravityCompat.START);
@@ -501,20 +505,6 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem filterItem = menu.findItem(R.id.action_filter);
-        if (filterItem != null) {
-            filterItem.setVisible(isOnAllScope);
-        }
-
-        MenuItem readItem = menu.findItem(R.id.filter_show_read);
-        if (readItem != null) {
-            readItem.setChecked(viewModel.isShowRead());
-        }
-        MenuItem unreadItem = menu.findItem(R.id.filter_show_unread);
-        if (unreadItem != null) {
-            unreadItem.setChecked(viewModel.isShowUnread());
-        }
-
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -530,8 +520,6 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         } else if (id == R.id.action_mark_all_read) {
             showMarkedReadSnackbar(viewModel.markAllRead());
             return true;
-        } else if (id == R.id.filter_show_read || id == R.id.filter_show_unread) {
-            return handleReadStateFilterClick(item);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -547,20 +535,26 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
                 .show();
     }
 
-    private boolean handleReadStateFilterClick(MenuItem item) {
-        boolean newChecked = !item.isChecked();
-        boolean otherIsRead = item.getItemId() == R.id.filter_show_unread;
-        boolean otherChecked = otherIsRead ? viewModel.isShowRead() : viewModel.isShowUnread();
+    private void setupFilterChips() {
+        binding.chipFilterUnread.setOnClickListener(v -> onFilterChipClicked(binding.chipFilterUnread));
+        binding.chipFilterRead.setOnClickListener(v -> onFilterChipClicked(binding.chipFilterRead));
+        syncFilterChips();
+    }
 
-        if (!newChecked && !otherChecked) {
-            return true;
+    private void onFilterChipClicked(com.google.android.material.chip.Chip clicked) {
+        boolean showRead = binding.chipFilterRead.isChecked();
+        boolean showUnread = binding.chipFilterUnread.isChecked();
+        if (!showRead && !showUnread) {
+            clicked.setChecked(true);
+            return;
         }
-
-        item.setChecked(newChecked);
-        boolean showRead = item.getItemId() == R.id.filter_show_read ? newChecked : viewModel.isShowRead();
-        boolean showUnread = item.getItemId() == R.id.filter_show_unread ? newChecked : viewModel.isShowUnread();
         viewModel.setReadStateFilter(showRead, showUnread);
-        return true;
+    }
+
+    private void syncFilterChips() {
+        binding.filterChipScroll.setVisibility(isOnAllScope ? View.VISIBLE : View.GONE);
+        binding.chipFilterRead.setChecked(viewModel.isShowRead());
+        binding.chipFilterUnread.setChecked(viewModel.isShowUnread());
     }
 
     private void showSortDialog() {
@@ -589,9 +583,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         if (item.getFeedOpenMode() == Feed.OPEN_MODE_BROWSER) {
             openInBrowser(item.getArticle().getLink());
         } else {
-            Intent intent = new Intent(this, ArticleDetailActivity.class);
-            intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_ID, item.getArticle().getId());
-            startActivity(intent);
+            startActivity(ArticleDetailActivity.newIntent(this, adapter.getCurrentList(), item.getArticle().getId()));
         }
     }
 
