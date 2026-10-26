@@ -18,9 +18,7 @@ public final class BatteryOptimizationHelper {
     }
 
     public static Intent buildRequestExemptionIntent(Context context) {
-        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-        intent.setData(Uri.parse("package:" + context.getPackageName()));
-        return intent;
+        return new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
     }
 
     public static Intent buildAppSettingsIntent(Context context) {

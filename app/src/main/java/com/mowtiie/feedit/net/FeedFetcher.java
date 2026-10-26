@@ -1,5 +1,6 @@
 package com.mowtiie.feedit.net;
 
+import com.mowtiie.feedit.BuildConfig;
 import com.mowtiie.feedit.sync.SyncLog;
 
 import java.io.ByteArrayOutputStream;
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.UnknownServiceException;
 import java.util.zip.GZIPInputStream;
 
 public class FeedFetcher {
@@ -23,7 +25,7 @@ public class FeedFetcher {
             connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
             connection.setReadTimeout(READ_TIMEOUT_MS);
             connection.setRequestProperty("Accept-Encoding", "gzip");
-            connection.setRequestProperty("User-Agent", "FeedIt/1.0 (Android RSS reader)");
+            connection.setRequestProperty("User-Agent", "FeedIt/" + BuildConfig.VERSION_NAME + " (Android RSS reader)");
 
             if (previousEtag != null) {
                 connection.setRequestProperty("If-None-Match", previousEtag);
@@ -39,6 +41,12 @@ public class FeedFetcher {
             if (status == HttpURLConnection.HTTP_NOT_MODIFIED) {
                 return FetchResult.notModified(status);
             }
+            if (status >= 300 && status < 400) {
+                String location = connection.getHeaderField("Location");
+                if (location != null && location.regionMatches(true, 0, "http://", 0, 7)) {
+                    return FetchResult.error("Redirected to insecure " + location + " (cleartext HTTP is blocked)");
+                }
+            }
             if (status < 200 || status >= 300) {
                 return FetchResult.error("HTTP " + status + " fetching " + url);
             }
@@ -51,6 +59,8 @@ public class FeedFetcher {
             String lastModified = connection.getHeaderField("Last-Modified");
             return FetchResult.success(status, body, etag, lastModified);
 
+        } catch (UnknownServiceException e) {
+            return FetchResult.error("Cleartext HTTP is blocked, the feed must be served over https: " + url);
         } catch (IOException e) {
             SyncLog.w("      fetch threw " + e.getClass().getSimpleName() + ": " + e.getMessage() + " for " + url);
             return FetchResult.error(e.getClass().getSimpleName() + (e.getMessage() != null ? ": " + e.getMessage() : ""));
