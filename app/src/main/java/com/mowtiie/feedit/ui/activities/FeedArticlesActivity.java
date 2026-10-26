@@ -116,7 +116,7 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     @Override
     protected void onResume() {
         super.onResume();
-        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.LAYOUT_CARD);
+        String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.DEFAULT_LAYOUT);
         adapter.setLayoutStyle(layoutStyle);
     }
 

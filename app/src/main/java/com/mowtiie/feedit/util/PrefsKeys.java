@@ -37,6 +37,7 @@ public final class PrefsKeys {
     public static final String LAYOUT_COMPACT = "compact";
     public static final String LAYOUT_CARD = "card";
     public static final String LAYOUT_MAGAZINE = "magazine";
+    public static final String DEFAULT_LAYOUT = LAYOUT_CARD;
 
     private PrefsKeys() {
     }

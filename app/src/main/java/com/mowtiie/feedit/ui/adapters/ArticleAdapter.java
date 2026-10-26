@@ -64,7 +64,7 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
             };
 
     private final Listener listener;
-    private String layoutStyle = PrefsKeys.LAYOUT_CARD;
+    private String layoutStyle = PrefsKeys.DEFAULT_LAYOUT;
 
     public ArticleAdapter(Listener listener) {
         super(DIFF_CALLBACK);
