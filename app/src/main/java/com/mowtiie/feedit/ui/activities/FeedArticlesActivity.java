@@ -27,6 +27,7 @@ import com.mowtiie.feedit.sync.SyncScheduler;
 import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleSwipeCallback;
+import com.mowtiie.feedit.util.BrowserUtil;
 import com.mowtiie.feedit.util.ArticleActionsBottomSheet;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
@@ -264,7 +265,7 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
         viewModel.markRead(item.getArticle());
 
         if (item.getFeedOpenMode() == Feed.OPEN_MODE_BROWSER) {
-            openInBrowser(item.getArticle().getLink());
+            BrowserUtil.openUrl(this, item.getArticle().getLink());
         } else {
             startActivity(ArticleDetailActivity.newIntent(this, adapter.getCurrentList(), item.getArticle().getId()));
         }
@@ -273,16 +274,5 @@ public class FeedArticlesActivity extends FeedItActivity implements ArticleAdapt
     @Override
     public void onArticleLongClicked(ArticleUiState item) {
         ArticleActionsBottomSheet.show(this, item.getArticle(), viewModel);
-    }
-
-    private void openInBrowser(String url) {
-        if (url == null) {
-            return;
-        }
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No browser app found", Toast.LENGTH_SHORT).show();
-        }
     }
 }

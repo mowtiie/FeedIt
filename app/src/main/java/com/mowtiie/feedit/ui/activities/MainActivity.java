@@ -44,6 +44,7 @@ import com.mowtiie.feedit.ui.adapters.ArticleAdapter;
 import com.mowtiie.feedit.ui.viewmodel.MainViewModel;
 import com.mowtiie.feedit.util.ArticleActionsBottomSheet;
 import com.mowtiie.feedit.util.ArticleSwipeCallback;
+import com.mowtiie.feedit.util.BrowserUtil;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
@@ -62,6 +63,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     private ArticleAdapter adapter;
     private ActionBarDrawerToggle drawerToggle;
     private SearchView searchView;
+    private boolean skipNextResumeRefresh = true;
 
     private static final int FEED_ITEM_BASE = 0x10000000;
     private static final int TAG_ITEM_BASE = 0x20000000;
@@ -138,7 +140,12 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         String layoutStyle = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE).getString(PrefsKeys.ARTICLE_LAYOUT_STYLE, PrefsKeys.DEFAULT_LAYOUT);
         adapter.setLayoutStyle(layoutStyle);
         syncFilterChips();
-        viewModel.refresh();
+        if (skipNextResumeRefresh) {
+            // onCreate already selected a scope, which loaded the list.
+            skipNextResumeRefresh = false;
+        } else {
+            viewModel.refresh();
+        }
     }
 
     private void applyStartupPage() {
@@ -590,7 +597,7 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
         viewModel.markRead(item.getArticle());
 
         if (item.getFeedOpenMode() == Feed.OPEN_MODE_BROWSER) {
-            openInBrowser(item.getArticle().getLink());
+            BrowserUtil.openUrl(this, item.getArticle().getLink());
         } else {
             startActivity(ArticleDetailActivity.newIntent(this, adapter.getCurrentList(), item.getArticle().getId()));
         }
@@ -599,16 +606,5 @@ public class MainActivity extends FeedItActivity implements ArticleAdapter.Liste
     @Override
     public void onArticleLongClicked(ArticleUiState item) {
         ArticleActionsBottomSheet.show(this, item.getArticle(), viewModel);
-    }
-
-    private void openInBrowser(String url) {
-        if (url == null) {
-            return;
-        }
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No browser app found", Toast.LENGTH_SHORT).show();
-        }
     }
 }

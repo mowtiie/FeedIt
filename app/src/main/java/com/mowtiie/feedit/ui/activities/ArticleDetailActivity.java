@@ -30,6 +30,7 @@ import com.mowtiie.feedit.databinding.ActivityArticleDetailBinding;
 import com.mowtiie.feedit.model.Article;
 import com.mowtiie.feedit.ui.viewmodel.ArticleViewModel;
 import com.mowtiie.feedit.util.ArticleNavigation;
+import com.mowtiie.feedit.util.BrowserUtil;
 import com.mowtiie.feedit.util.ArticleUiState;
 import com.mowtiie.feedit.util.InsetsUtil;
 import com.mowtiie.feedit.util.PrefsKeys;
@@ -268,13 +269,8 @@ public class ArticleDetailActivity extends FeedItActivity {
 
     private void openInBrowser() {
         Article article = viewModel.getArticle().getValue();
-        if (article == null || article.getLink() == null) {
-            return;
-        }
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(article.getLink())));
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No browser app found", Toast.LENGTH_SHORT).show();
+        if (article != null) {
+            BrowserUtil.openUrl(this, article.getLink());
         }
     }
 }

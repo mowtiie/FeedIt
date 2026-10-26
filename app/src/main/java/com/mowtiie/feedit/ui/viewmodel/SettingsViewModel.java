@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.mowtiie.feedit.R;
 import com.mowtiie.feedit.data.DatabaseHelper;
 import com.mowtiie.feedit.data.FeedDao;
 import com.mowtiie.feedit.data.FeedRepository;
@@ -206,9 +207,9 @@ public class SettingsViewModel extends AndroidViewModel {
                     new OpmlWriter().write(out, entries);
                 }
 
-                opmlMessage.postValue("Exported " + entries.size() + " feeds");
+                opmlMessage.postValue(getApplication().getResources().getQuantityString(R.plurals.opml_exported, entries.size(), entries.size()));
             } catch (Exception e) {
-                opmlMessage.postValue("Export failed: " + e.getMessage());
+                opmlMessage.postValue(getApplication().getString(R.string.opml_export_failed, e.getMessage()));
             } finally {
                 opmlBusy.postValue(false);
             }
@@ -269,9 +270,9 @@ public class SettingsViewModel extends AndroidViewModel {
                 }
 
                 FeedRepository.getInstance(getApplication()).loadFeedsWithTags();
-                opmlMessage.postValue("Imported " + imported + " feeds");
+                opmlMessage.postValue(getApplication().getResources().getQuantityString(R.plurals.opml_imported, imported, imported));
             } catch (Exception e) {
-                opmlMessage.postValue("Import failed: " + e.getMessage());
+                opmlMessage.postValue(getApplication().getString(R.string.opml_import_failed, e.getMessage()));
             } finally {
                 opmlBusy.postValue(false);
             }

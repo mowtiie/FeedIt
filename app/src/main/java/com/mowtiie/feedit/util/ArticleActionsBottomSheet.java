@@ -62,7 +62,7 @@ public final class ArticleActionsBottomSheet {
 
         sheetView.findViewById(R.id.row_open_browser).setOnClickListener(v -> {
             viewModel.markRead(article);
-            openInBrowser(activity, article.getLink());
+            BrowserUtil.openUrl(activity, article.getLink());
             dialog.dismiss();
         });
 
@@ -80,16 +80,5 @@ public final class ArticleActionsBottomSheet {
             shareIntent.putExtra(Intent.EXTRA_SUBJECT, article.getTitle());
         }
         activity.startActivity(Intent.createChooser(shareIntent, activity.getString(R.string.action_share)));
-    }
-
-    private static void openInBrowser(Activity activity, String url) {
-        if (url == null) {
-            return;
-        }
-        try {
-            activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(activity, "No browser app found", Toast.LENGTH_SHORT).show();
-        }
     }
 }

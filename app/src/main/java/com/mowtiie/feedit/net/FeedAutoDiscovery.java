@@ -17,10 +17,10 @@ import java.util.zip.GZIPInputStream;
 
 public class FeedAutoDiscovery {
 
-    private static final int CONNECT_TIMEOUT_MS = 15_000;
-    private static final int READ_TIMEOUT_MS = 15_000;
+    private static final int CONNECT_TIMEOUT_MS = 8_000;
+    private static final int READ_TIMEOUT_MS = 10_000;
     private static final int PROBE_TIMEOUT_MS = 4_000;
-    private static final long PROBE_BUDGET_MS = 8_000;
+    private static final long PROBE_BUDGET_MS = 6_000;
     private static final int MAX_HTML_BYTES = 500 * 1024;
     private static final int SNIFF_BYTES = 2048;
 

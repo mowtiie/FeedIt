@@ -27,9 +27,6 @@ import java.util.function.Consumer;
 
 public class MainViewModel extends AndroidViewModel {
 
-    private static final String PREFS_NAME = "feedit_prefs";
-    private static final String KEY_SORT_ORDER = "sort_order";
-
     private final FeedRepository repository;
     private final SharedPreferences prefs;
 
@@ -50,9 +47,9 @@ public class MainViewModel extends AndroidViewModel {
     public MainViewModel(@NonNull Application application) {
         super(application);
         repository = FeedRepository.getInstance(application);
-        prefs = application.getSharedPreferences(PREFS_NAME, Application.MODE_PRIVATE);
+        prefs = application.getSharedPreferences(PrefsKeys.PREFS_NAME, Application.MODE_PRIVATE);
         sortOrder = ArticleDao.SortOrder.valueOf(
-                prefs.getString(KEY_SORT_ORDER, ArticleDao.SortOrder.NEWEST.name()));
+                prefs.getString(PrefsKeys.SORT_ORDER, ArticleDao.SortOrder.NEWEST.name()));
         showRead = prefs.getBoolean(PrefsKeys.SHOW_READ, true);
         showUnread = prefs.getBoolean(PrefsKeys.SHOW_UNREAD, true);
 
@@ -68,8 +65,6 @@ public class MainViewModel extends AndroidViewModel {
 
         repository.loadTags();
         repository.loadFeedsWithTags();
-        repository.loadUnreadCounts();
-        refresh();
     }
 
     public LiveData<List<ArticleUiState>> getArticleUiStates() {
@@ -145,7 +140,7 @@ public class MainViewModel extends AndroidViewModel {
 
     public void setSortOrder(ArticleDao.SortOrder order) {
         this.sortOrder = order;
-        prefs.edit().putString(KEY_SORT_ORDER, order.name()).apply();
+        prefs.edit().putString(PrefsKeys.SORT_ORDER, order.name()).apply();
         refresh();
     }
 
@@ -217,30 +212,12 @@ public class MainViewModel extends AndroidViewModel {
         for (int i = 0; i < latestArticles.size(); i++) {
             Article original = latestArticles.get(i);
             if (articleIds.contains(original.getId())) {
-                Article copy = copyOf(original);
+                Article copy = new Article(original);
                 mutator.accept(copy);
                 latestArticles.set(i, copy);
             }
         }
         articleUiStates.setValue(buildUiStates());
-    }
-
-    private Article copyOf(Article a) {
-        Article copy = new Article();
-        copy.setId(a.getId());
-        copy.setFeedId(a.getFeedId());
-        copy.setGuid(a.getGuid());
-        copy.setTitle(a.getTitle());
-        copy.setLink(a.getLink());
-        copy.setAuthor(a.getAuthor());
-        copy.setSummary(a.getSummary());
-        copy.setContent(a.getContent());
-        copy.setImageUrl(a.getImageUrl());
-        copy.setPublishedAt(a.getPublishedAt());
-        copy.setFetchedAt(a.getFetchedAt());
-        copy.setRead(a.isRead());
-        copy.setStarred(a.isStarred());
-        return copy;
     }
 
     private List<ArticleUiState> buildUiStates() {
