@@ -138,17 +138,21 @@ public class ArticleAdapter extends ListAdapter<ArticleUiState, ArticleAdapter.A
     }
 
     private static void bindThumbnail(ImageView imageView, Article article) {
-        if (article.getImageUrl() != null) {
-            Glide.with(imageView.getContext())
-                    .load(article.getImageUrl())
-                    .placeholder(R.drawable.placeholder_thumbnail_loading)
-                    .error(R.drawable.placeholder_thumbnail_error)
-                    .centerCrop()
-                    .into(imageView);
-        } else {
+        String imageUrl = article.getImageUrl();
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            // Text-only article: drop the thumbnail slot instead of showing an empty placeholder.
+            Glide.with(imageView.getContext()).clear(imageView);
             imageView.setImageDrawable(null);
-            imageView.setBackgroundResource(R.drawable.placeholder_thumbnail);
+            imageView.setVisibility(View.GONE);
+            return;
         }
+        imageView.setVisibility(View.VISIBLE);
+        Glide.with(imageView.getContext())
+                .load(imageUrl)
+                .placeholder(R.drawable.placeholder_thumbnail_loading)
+                .error(R.drawable.placeholder_thumbnail_error)
+                .centerCrop()
+                .into(imageView);
     }
 
     private static void bindStarAndClick(MaterialCardView card, ImageView starIndicator, ArticleUiState item, Listener listener) {
