@@ -148,6 +148,20 @@ public class ArticleDaoTest {
     }
 
     @Test
+    public void starredCount_tracksStarAndUnstar() {
+        List<Article> inserted = dao.insertAllOrIgnore(Arrays.asList(
+                article("a", 1L), article("b", 2L), article("c", 3L)));
+        assertEquals(0, dao.getStarredCount());
+
+        dao.setStarred(inserted.get(0).getId(), true);
+        dao.setStarred(inserted.get(1).getId(), true);
+        assertEquals(2, dao.getStarredCount());
+
+        dao.setStarred(inserted.get(0).getId(), false);
+        assertEquals(1, dao.getStarredCount());
+    }
+
+    @Test
     public void insertAllOrIgnore_skipsDuplicateGuids() {
         dao.insertAllOrIgnore(Collections.singletonList(article("a", 1L)));
 

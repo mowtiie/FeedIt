@@ -14,7 +14,7 @@ FeedIt is a simple, open-source RSS and Atom feed reader for Android. No account
 
 * **Free and Open Source:** Enjoy complete transparency and community-driven development.
 * **No Account, No Tracking:** There's no login, no analytics, and nothing phoning home beyond fetching the feeds you actually subscribed to. Everything you read, star, and organize stays in a local database on your device.
-* **Feed Management:** Add a feed by URL, with auto-discovery so pasting a site's homepage usually finds its feed for you. Organize with freeform tags (listed in the navigation drawer with unread counts), set each feed to open articles in-app or in your browser, and cancel a slow add at any time.
+* **Feed Management:** Add a feed by URL, with auto-discovery so pasting a site's homepage usually finds its feed for you. Organize with freeform tags, set each feed to open articles in-app or in your browser, and cancel a slow add at any time.
 * **Broad Format Support:** RSS 2.0, RSS 1.0, Atom, and JSON Feed, including YouTube and Mastodon feeds. Insecure `http://` feed links are upgraded to `https://`.
 * **Multiple Article Layouts:** List, Compact, Card, or Magazine. Pick the density and style that actually fits how you read, from a quick headline scan to a full-image-forward view.
 * **Search, Filter & Sort:** Full-text search, Unread/Read filter chips that remember your choice, a Starred view, and sorting by newest, oldest, unread-first, or by feed.
